@@ -6,5 +6,13 @@
       "value": 524288
     }
   ],
-  "custom_joint_texture_layouts": []
+  "custom_joint_texture_layouts": [],
+  "general": {
+    "designResolution": {
+      "fitWidth": true,
+      "width": 1280,
+      "height": 720,
+      "fitHeight": true
+    }
+  }
 }
