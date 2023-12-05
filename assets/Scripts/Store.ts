@@ -1,27 +1,56 @@
 import { _decorator, CCBoolean, CCInteger } from 'cc';
-import { GameSettings } from 'db://assets/Scripts/Interfaces/GameSettings'
+import { GameSettings } from 'db://assets/Scripts/Components/GameSettings'
 import mobx from 'mobx/dist/mobx.cjs.development.js';
+import { UIState } from 'db://assets/Scripts/Enums/UIState';
 
-const { ccclass, property } = _decorator;
+const { ccclass, property, type } = _decorator;
 export const { makeAutoObservable, autorun, reaction } = mobx;
 
-// Define your state class
 @ccclass('GameStateStore')
 export class GameStateStore {
-	gameSettings: GameSettings
-	@property(CCInteger)
-	gameVolume: 0
+	@property(GameSettings)
+	gameSettings!: GameSettings
+
+	@property({ type: UIState })
+	uiState: UIState = UIState.Menu
 
 	constructor() {
-		makeAutoObservable(this);
+		makeAutoObservable(this)
+	}
+
+	setUIState(state: UIState): void {
+		this.uiState = state
 	}
 
 	setMusicVolume(volume: number): void {
-		this.gameVolume = volume
+		this.gameSettings.musicVolume = volume
+	}
+
+	setEffectsVolume(volume: number): void {
+		this.gameSettings.effectsVolume = volume
+	}
+
+	setInterfaceVolume(volume: number): void {
+		this.gameSettings.interfaceVolume = volume
+	}
+
+	get getUIState(): UIState {
+		return this.uiState
+	}
+
+	get getMusicVolume(): number {
+		return this.gameSettings.musicVolume
+	}
+
+	get getEffectsVolume(): number {
+		return this.gameSettings.effectsVolume
+	}
+
+	get getInterfaceVolume(): number {
+		return this.gameSettings.interfaceVolume
 	}
 }
 
-// Create an instance of GameState
 export const gameStore = new GameStateStore();
 //devtools
 //@ts-expect-error - Cocos can't properly import this library

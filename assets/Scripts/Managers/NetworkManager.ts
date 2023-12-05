@@ -1,7 +1,7 @@
 import { _decorator, Component, Node } from 'cc';
 const { ccclass, property } = _decorator;
 
-import Colyseus from '../Colyseus/colyseus-cocos-creator.js';
+import Colyseus from 'db://assets/Scripts/Colyseus/colyseus-cocos-creator.js';
 
 @ccclass('NetworkManager')
 export class NetworkManager extends Component {
