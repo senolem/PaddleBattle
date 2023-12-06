@@ -9,10 +9,10 @@ export const { makeAutoObservable, autorun, reaction } = mobx;
 @ccclass('GameStateStore')
 export class GameStateStore {
 	@property(GameSettings)
-	gameSettings!: GameSettings
+	gameSettings: GameSettings = new GameSettings
 
 	@property({ type: UIState })
-	uiState: UIState = UIState.Menu
+	uiState: UIState = UIState.None
 
 	constructor() {
 		makeAutoObservable(this)
@@ -30,8 +30,8 @@ export class GameStateStore {
 		this.gameSettings.effectsVolume = volume
 	}
 
-	setInterfaceVolume(volume: number): void {
-		this.gameSettings.interfaceVolume = volume
+	setUIVolume(volume: number): void {
+		this.gameSettings.UIVolume = volume
 	}
 
 	get getUIState(): UIState {
@@ -46,8 +46,8 @@ export class GameStateStore {
 		return this.gameSettings.effectsVolume
 	}
 
-	get getInterfaceVolume(): number {
-		return this.gameSettings.interfaceVolume
+	get getUIVolume(): number {
+		return this.gameSettings.UIVolume
 	}
 }
 

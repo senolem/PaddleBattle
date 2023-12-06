@@ -1,8 +1,10 @@
-import { Enum } from "cc";
+import { Enum } from "cc"
 
 export enum UIState {
-    Menu = 1,
+	None = 1,
+    Menu,
     PlayMenu,
+	SettingsMenu,
     PartyMenu,
     MatchmakingMenu
 }

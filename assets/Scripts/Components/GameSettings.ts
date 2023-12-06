@@ -1,14 +1,9 @@
-import { _decorator, CCInteger, Component } from "cc";
-const { ccclass, property } = _decorator;
+import { _decorator } from "cc"
+const { ccclass } = _decorator
 
 @ccclass('GameSettings')
-export class GameSettings extends Component {
-	@property({ type: CCInteger })
-	musicVolume: number;
-
-	@property({ type: CCInteger })
-	effectsVolume: number;
-
-	@property({ type: CCInteger })
-	interfaceVolume: number;
+export class GameSettings {
+	musicVolume: number
+	effectsVolume: number
+	UIVolume: number
 }
