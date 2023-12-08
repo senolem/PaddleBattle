@@ -5,6 +5,8 @@ export enum UIState {
     Menu,
     PlayMenu,
 	SettingsMenu,
+	AudioSettingsMenu,
+	ControlsSettingsMenu,
     PartyMenu,
     MatchmakingMenu
 }

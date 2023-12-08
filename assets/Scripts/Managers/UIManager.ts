@@ -21,6 +21,8 @@ export class UIManager {
 	public menu: Node
 	public playMenu: Node
 	public settingsMenu: Node
+	public audioSettingsMenu: Node
+	public controlsSettingsMenu: Node
 	public partyMenu: Node
 	public matchmakingMenu: Node
 
@@ -45,9 +47,11 @@ export class UIManager {
 			(value: UIState, previousValue: UIState) => {
 				this.menu.active = false
 				this.playMenu.active = false
-				//this.settingsMenu.active = false
+				this.settingsMenu.active = false
+				this.audioSettingsMenu.active = false
+				this.controlsSettingsMenu.active = false
 				this.partyMenu.active = false
-				//this.matchmakingMenu.active = false
+				this.matchmakingMenu.active = false
 
 				switch(value) {
 					case UIState.Menu:
@@ -62,11 +66,23 @@ export class UIManager {
 					}
 					break
 
-					//case UIState.SettingsMenu:
-					//{
-					//	this.settingsMenu.active = true
-					//}
-					//break
+					case UIState.SettingsMenu:
+					{
+						this.settingsMenu.active = true
+					}
+					break
+
+					case UIState.AudioSettingsMenu:
+					{
+						this.settingsMenu.active = true
+					}
+					break
+
+					case UIState.ControlsSettingsMenu:
+					{
+						this.settingsMenu.active = true
+					}
+					break
 
 					case UIState.PartyMenu:
 					{
@@ -74,11 +90,11 @@ export class UIManager {
 					}
 					break
 
-					//case UIState.MatchmakingMenu:
-					//{
-					//	this.matchmakingMenu.active = true
-					//}
-					//break
+					case UIState.MatchmakingMenu:
+					{
+						this.matchmakingMenu.active = true
+					}
+					break
 				}
 			}
 		)
@@ -98,11 +114,23 @@ export class UIManager {
 			}
 			break
 
-			//case UIState.SettingsMenu:
-			//{
-			//	GameManager.inst.store.setUIState(UIState.SettingsMenu)
-			//}
-			//break
+			case UIState.SettingsMenu:
+			{
+				GameManager.inst.store.setUIState(UIState.SettingsMenu)
+			}
+			break
+
+			case UIState.AudioSettingsMenu:
+			{
+				GameManager.inst.store.setUIState(UIState.AudioSettingsMenu)
+			}
+			break
+
+			case UIState.ControlsSettingsMenu:
+			{
+				GameManager.inst.store.setUIState(UIState.ControlsSettingsMenu)
+			}
+			break
 
 			case UIState.PartyMenu:
 			{
@@ -110,11 +138,11 @@ export class UIManager {
 			}
 			break
 
-			//case UIState.MatchmakingMenu:
-			//{
-			//	GameManager.inst.store.setUIState(UIState.MatchmakingMenu)
-			//}
-			//break
+			case UIState.MatchmakingMenu:
+			{
+				GameManager.inst.store.setUIState(UIState.MatchmakingMenu)
+			}
+			break
 			
 			default:
 			{
@@ -146,6 +174,8 @@ export class UIManager {
 		this.playMenu = canvas.node.getChildByName("PlayMenu");
 		this.partyMenu = canvas.node.getChildByName("PartyMenu");
 		this.settingsMenu = canvas.node.getChildByName("SettingsMenu");
+		this.audioSettingsMenu = canvas.node.getChildByName("AudioSettingsMenu");
+		this.controlsSettingsMenu = canvas.node.getChildByName("ControlsSettingsMenu");
 		this.matchmakingMenu = canvas.node.getChildByName("MatchmakingMenu");
 	}
 }
