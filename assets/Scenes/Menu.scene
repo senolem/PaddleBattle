@@ -3418,7 +3418,7 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "_id": "ce8jccCkROsLfHfz+GfP7R"
+    "_id": "67mgadkEJHW5DItgsPj/Mp"
   },
   {
     "__type__": "cc.UITransform",
@@ -9514,7 +9514,7 @@
     "_id": "89A05TmSdK2ItzQEYZqYit"
   },
   {
-    "__type__": "8ebf0CO/klMF6Y4q/CecPGk",
+    "__type__": "20e54r7rA1BRbhfldevhvB5",
     "_name": "",
     "_objFlags": 0,
     "__editorExtras__": {},
@@ -9523,7 +9523,7 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "_id": "14xRw5a7JETY2Y0cvSPmuE"
+    "_id": "e2WVn/e7tPF7zlcnSCRnpW"
   },
   {
     "__type__": "cc.Node",
@@ -9804,12 +9804,12 @@
     "__prefab": null,
     "clickEvents": [],
     "_interactable": true,
-    "_transition": 2,
+    "_transition": 1,
     "_normalColor": {
       "__type__": "cc.Color",
-      "r": 214,
-      "g": 214,
-      "b": 214,
+      "r": 255,
+      "g": 255,
+      "b": 255,
       "a": 255
     },
     "_hoverColor": {
@@ -9821,9 +9821,9 @@
     },
     "_pressedColor": {
       "__type__": "cc.Color",
-      "r": 255,
-      "g": 255,
-      "b": 255,
+      "r": 216,
+      "g": 216,
+      "b": 216,
       "a": 255
     },
     "_disabledColor": {
@@ -9864,7 +9864,7 @@
     "_id": "4cLHPtF8JMzLDv8pkD/h7A"
   },
   {
-    "__type__": "22883fUEwRMmqF0/E6MVoIM",
+    "__type__": "eeaa87MUX1Hna505/V4bC5o",
     "_name": "",
     "_objFlags": 0,
     "__editorExtras__": {},
@@ -9873,7 +9873,7 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "_id": "8aPGE2UGFLeIaBtk6uemrI"
+    "_id": "6bNr+jnM9K4bz0BlqJwdXC"
   },
   {
     "__type__": "cc.Node",
@@ -10154,12 +10154,12 @@
     "__prefab": null,
     "clickEvents": [],
     "_interactable": true,
-    "_transition": 2,
+    "_transition": 1,
     "_normalColor": {
       "__type__": "cc.Color",
-      "r": 214,
-      "g": 214,
-      "b": 214,
+      "r": 255,
+      "g": 255,
+      "b": 255,
       "a": 255
     },
     "_hoverColor": {
@@ -10171,9 +10171,9 @@
     },
     "_pressedColor": {
       "__type__": "cc.Color",
-      "r": 255,
-      "g": 255,
-      "b": 255,
+      "r": 216,
+      "g": 216,
+      "b": 216,
       "a": 255
     },
     "_disabledColor": {
@@ -10214,7 +10214,7 @@
     "_id": "2csfYuLjBHYJ61BKGpLDxY"
   },
   {
-    "__type__": "820f4FZrd9NZYhSh47/4zvG",
+    "__type__": "44c05wFOaBG3LMSfbqyiY82",
     "_name": "",
     "_objFlags": 0,
     "__editorExtras__": {},
@@ -10223,7 +10223,7 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "_id": "97BI/tWphI3qUTzj9COR0E"
+    "_id": "e7GqmPoQpP3JEX+rSuKZKL"
   },
   {
     "__type__": "cc.UITransform",

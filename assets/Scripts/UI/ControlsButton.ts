@@ -4,8 +4,8 @@ import { UIManager } from 'db://assets/Scripts/Managers/UIManager';
 import { UIState } from 'db://assets/Scripts/Enums/UIState';
 const { ccclass, property } = _decorator;
 
-@ccclass('BackButton')
-export class BackButton extends Component {
+@ccclass('ControlsButton')
+export class ControlsButton extends Component {
 	private button: Button
 
 	protected onLoad(): void {
@@ -14,7 +14,7 @@ export class BackButton extends Component {
 		// Click event
 		this.node.on(Button.EventType.CLICK, (event) => {
 			AudioManager.inst.playOneShotUI('button_click')
-			UIManager.inst.switchUIState(UIState.Menu)
+			UIManager.inst.switchUIState(UIState.ControlsSettingsMenu)
 		})
 
 		// Hover event

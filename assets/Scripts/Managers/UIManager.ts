@@ -74,13 +74,13 @@ export class UIManager {
 
 					case UIState.AudioSettingsMenu:
 					{
-						this.settingsMenu.active = true
+						this.audioSettingsMenu.active = true
 					}
 					break
 
 					case UIState.ControlsSettingsMenu:
 					{
-						this.settingsMenu.active = true
+						this.controlsSettingsMenu.active = true
 					}
 					break
 
@@ -170,13 +170,13 @@ export class UIManager {
 
 	setCanvas(canvas: Canvas) {
 		this.canvas = canvas
-		this.menu = canvas.node.getChildByName("Menu");
-		this.playMenu = canvas.node.getChildByName("PlayMenu");
-		this.partyMenu = canvas.node.getChildByName("PartyMenu");
-		this.settingsMenu = canvas.node.getChildByName("SettingsMenu");
-		this.audioSettingsMenu = canvas.node.getChildByName("AudioSettingsMenu");
-		this.controlsSettingsMenu = canvas.node.getChildByName("ControlsSettingsMenu");
-		this.matchmakingMenu = canvas.node.getChildByName("MatchmakingMenu");
+		this.menu = canvas.node.getChildByName("Menu")
+		this.playMenu = canvas.node.getChildByName("PlayMenu")
+		this.partyMenu = canvas.node.getChildByName("PartyMenu")
+		this.settingsMenu = canvas.node.getChildByName("SettingsMenu")
+		this.audioSettingsMenu = canvas.node.getChildByName("AudioSettingsMenu")
+		this.controlsSettingsMenu = canvas.node.getChildByName("ControlsSettingsMenu")
+		this.matchmakingMenu = canvas.node.getChildByName("MatchmakingMenu")
 	}
 }
 

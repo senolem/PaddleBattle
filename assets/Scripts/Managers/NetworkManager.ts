@@ -34,6 +34,7 @@ export class NetworkManager {
 		this.client = new Colyseus.Client(`${this.useSSL ? "wss" : "ws"}://${this.hostname}${([443, 80].includes(this.port) || this.useSSL) ? "" : `:${this.port}`}`)
 
 		// Connect into the room
+		console.log(document.cookie)
         this.connect()
 	}
 
@@ -42,14 +43,14 @@ export class NetworkManager {
             this.LobbyRoom = await this.client.join("LobbyRoom", { accessToken: this.accessToken })
 
             console.log("Successfully joined LobbyRoom")
-            console.log("Current sessionId:", this.LobbyRoom.sessionId)
+            console.log("Current sessionId: ", this.LobbyRoom.sessionId)
 
             this.LobbyRoom.onStateChange((state) => {
                 console.log("onStateChange: ", state)
             })
 
             this.LobbyRoom.onLeave((code) => {
-                console.log("onLeave:", code)
+                console.log("onLeave: ", code)
             })
 
         } catch (e) {
