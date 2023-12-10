@@ -1,6 +1,10 @@
 import { _decorator, Node, director } from 'cc'
 const { ccclass, property } = _decorator
 import Colyseus from 'db://assets/Scripts/Colyseus/colyseus-cocos-creator.js'
+import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
+import { UIManager } from 'db://assets/Scripts/Managers/UIManager'
+import { UIState } from 'db://assets/Scripts/Enums/UIState'
+import { Invitation } from 'db://assets/Scripts/Components/Invitation'
 
 @ccclass('NetworkManager')
 export class NetworkManager {
@@ -53,6 +57,21 @@ export class NetworkManager {
                 console.log("onLeave: ", code)
             })
 
+			this.LobbyRoom.listen('setAuthorization', (authorization: string) => {
+				GameManager.inst.store.setAuthorization(authorization)
+			})
+
+			this.LobbyRoom.listen('joinRoom', () => {
+				UIManager.inst.switchUIState(UIState.PartyMenu)
+			})
+
+			this.LobbyRoom.listen('leaveRoom', () => {
+				UIManager.inst.switchUIState(UIState.PlayMenu)
+			})
+
+			this.LobbyRoom.listen('receivedInvitation', (invitation: Invitation) => {
+				UIManager.inst.showInvitation(invitation)
+			})
         } catch (e) {
             console.error(e)
         }

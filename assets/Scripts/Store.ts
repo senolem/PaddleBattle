@@ -1,4 +1,4 @@
-import { _decorator, CCBoolean, CCInteger } from 'cc';
+import { _decorator, CCBoolean, CCInteger, CCString } from 'cc';
 import { GameSettings } from 'db://assets/Scripts/Components/GameSettings'
 import mobx from 'mobx/dist/mobx.cjs.development.js';
 import { UIState } from 'db://assets/Scripts/Enums/UIState';
@@ -13,6 +13,9 @@ export class GameStateStore {
 
 	@property({ type: UIState })
 	uiState: UIState = UIState.None
+
+	@property(CCString)
+	authorization: string
 
 	constructor() {
 		makeAutoObservable(this)
@@ -34,6 +37,10 @@ export class GameStateStore {
 		this.gameSettings.UIVolume = volume
 	}
 
+	setAuthorization(authorization: string): void {
+		this.authorization = authorization
+	}
+
 	get getUIState(): UIState {
 		return this.uiState
 	}
@@ -48,6 +55,10 @@ export class GameStateStore {
 
 	get getUIVolume(): number {
 		return this.gameSettings.UIVolume
+	}
+
+	get getAuthorization(): string {
+		return this.authorization
 	}
 }
 

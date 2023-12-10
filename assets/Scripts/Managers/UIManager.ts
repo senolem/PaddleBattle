@@ -3,6 +3,7 @@ const { ccclass, property } = _decorator
 import { gameStore, reaction } from 'db://assets/Scripts/Store'
 import { UIState } from 'db://assets/Scripts/Enums/UIState'
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
+import { Invitation } from 'db://assets/Scripts/Components/Invitation'
 
 const view = View.instance
 
@@ -25,6 +26,7 @@ export class UIManager {
 	public controlsSettingsMenu: Node
 	public partyMenu: Node
 	public matchmakingMenu: Node
+	public notifications: Node
 
 	constructor() {
 		// Create a new UIManager node and add it to the scene
@@ -177,6 +179,11 @@ export class UIManager {
 		this.audioSettingsMenu = canvas.node.getChildByName("AudioSettingsMenu")
 		this.controlsSettingsMenu = canvas.node.getChildByName("ControlsSettingsMenu")
 		this.matchmakingMenu = canvas.node.getChildByName("MatchmakingMenu")
+		this.notifications = canvas.node.getChildByName("Notifications")
+	}
+
+	showInvitation(invitation: Invitation) {
+
 	}
 }
 

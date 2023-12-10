@@ -1,8 +1,9 @@
-import { CCString, CCInteger } from 'cc'
+import { _decorator } from "cc"
+const { ccclass } = _decorator
 
-export interface Invitation {
-	username: typeof CCString
-	avatarUrl: typeof CCString
-	sender: typeof CCInteger
-	recipient: typeof CCInteger
+@ccclass('Invitation')
+export class Invitation {
+	id: string
+	username: string
+	avatarUrl: string
 }
