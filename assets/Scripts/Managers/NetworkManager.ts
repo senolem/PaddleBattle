@@ -38,7 +38,6 @@ export class NetworkManager {
 		this.client = new Colyseus.Client(`${this.useSSL ? "wss" : "ws"}://${this.hostname}${([443, 80].includes(this.port) || this.useSSL) ? "" : `:${this.port}`}`)
 
 		// Connect into the room
-		console.log(document.cookie)
         this.connect()
 	}
 
@@ -57,19 +56,19 @@ export class NetworkManager {
                 console.log("onLeave: ", code)
             })
 
-			this.LobbyRoom.listen('setAuthorization', (authorization: string) => {
+			this.LobbyRoom.onMessage('setAuthorization', (authorization: string) => {
 				GameManager.inst.store.setAuthorization(authorization)
 			})
 
-			this.LobbyRoom.listen('joinRoom', () => {
+			this.LobbyRoom.onMessage('joinRoom', () => {
 				UIManager.inst.switchUIState(UIState.PartyMenu)
 			})
 
-			this.LobbyRoom.listen('leaveRoom', () => {
+			this.LobbyRoom.onMessage('leaveRoom', () => {
 				UIManager.inst.switchUIState(UIState.PlayMenu)
 			})
 
-			this.LobbyRoom.listen('receivedInvitation', (invitation: Invitation) => {
+			this.LobbyRoom.onMessage('receivedInvitation', (invitation: Invitation) => {
 				UIManager.inst.showInvitation(invitation)
 			})
         } catch (e) {
