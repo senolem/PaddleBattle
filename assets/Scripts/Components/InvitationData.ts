@@ -1,8 +1,8 @@
 import { _decorator } from "cc"
 const { ccclass } = _decorator
 
-@ccclass('Invitation')
-export class Invitation {
+@ccclass('InvitationData')
+export class InvitationData {
 	id: string
 	username: string
 	avatarUrl: string

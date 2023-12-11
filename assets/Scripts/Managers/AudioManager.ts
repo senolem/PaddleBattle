@@ -71,7 +71,7 @@ export class AudioManager {
 	 * Load every AudioClip inside resources/audio
 	*/
 	loadResources() {
-		resources.loadDir("audio/UI", function (err, assets) {
+		resources.loadDir("audio", function (err, assets) {
 			assets.forEach(function (asset) {
 				if (asset instanceof AudioClip) {
 					AudioManager.inst.UIClips.set(asset.name, asset)

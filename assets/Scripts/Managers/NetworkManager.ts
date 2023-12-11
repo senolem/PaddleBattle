@@ -4,7 +4,7 @@ import Colyseus from 'db://assets/Scripts/Colyseus/colyseus-cocos-creator.js'
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
 import { UIManager } from 'db://assets/Scripts/Managers/UIManager'
 import { UIState } from 'db://assets/Scripts/Enums/UIState'
-import { Invitation } from 'db://assets/Scripts/Components/Invitation'
+import { Invitation } from '../Components/InvitationData'
 
 @ccclass('NetworkManager')
 export class NetworkManager {

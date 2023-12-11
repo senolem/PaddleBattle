@@ -1,9 +1,10 @@
-import { _decorator, Node, View, ResolutionPolicy, director, Canvas, Button } from 'cc'
+import { _decorator, Node, View, ResolutionPolicy, director, Canvas, Button, instantiate, resources, Prefab, Texture2D, ImageAsset } from 'cc'
 const { ccclass, property } = _decorator
 import { gameStore, reaction } from 'db://assets/Scripts/Store'
 import { UIState } from 'db://assets/Scripts/Enums/UIState'
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
-import { Invitation } from 'db://assets/Scripts/Components/Invitation'
+import { InvitationData } from 'db://assets/Scripts/Components/InvitationData'
+import { Invitation } from 'db://assets/Scripts/UI/Invitation/Invitation'
 
 const view = View.instance
 
@@ -27,6 +28,8 @@ export class UIManager {
 	public partyMenu: Node
 	public matchmakingMenu: Node
 	public notifications: Node
+	public prefabs: Map<string, Prefab> = new Map<string, Prefab>()
+	public defaultAvatar: Texture2D = new Texture2D()
 
 	constructor() {
 		// Create a new UIManager node and add it to the scene
@@ -100,6 +103,20 @@ export class UIManager {
 				}
 			}
 		)
+	}
+
+	loadResources() {
+		resources.loadDir("UI", function (err, assets) {
+			assets.forEach(function (asset) {
+				if (asset instanceof Prefab) {
+					this.prefabs.set(asset.name, asset)
+				} else if (asset instanceof ImageAsset) {
+					if (asset.name === 'default') {
+						this.defaultAvatar.image = asset
+					}
+				}
+			});
+		})
 	}
 
 	switchUIState(state: UIState) {
@@ -182,8 +199,12 @@ export class UIManager {
 		this.notifications = canvas.node.getChildByName("Notifications")
 	}
 
-	showInvitation(invitation: Invitation) {
+	showInvitation(invitationData: InvitationData) {
+		const invitationNode = instantiate(this.prefabs.get('Invitation'))
+		invitationNode.parent = this.notifications
 
+		const invitation = invitationNode.getComponent(Invitation)
+		invitation.init(invitationData.id, invitationData.username, invitationData.avatarUrl)
 	}
 }
 
