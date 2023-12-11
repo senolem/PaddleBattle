@@ -4,7 +4,7 @@ import Colyseus from 'db://assets/Scripts/Colyseus/colyseus-cocos-creator.js'
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
 import { UIManager } from 'db://assets/Scripts/Managers/UIManager'
 import { UIState } from 'db://assets/Scripts/Enums/UIState'
-import { Invitation } from '../Components/InvitationData'
+import { InvitationData } from 'db://assets/Scripts/Components/InvitationData'
 
 @ccclass('NetworkManager')
 export class NetworkManager {
@@ -68,11 +68,19 @@ export class NetworkManager {
 				UIManager.inst.switchUIState(UIState.PlayMenu)
 			})
 
-			this.LobbyRoom.onMessage('receivedInvitation', (invitation: Invitation) => {
+			this.LobbyRoom.onMessage('receivedInvitation', (invitation: InvitationData) => {
 				UIManager.inst.showInvitation(invitation)
 			})
         } catch (e) {
             console.error(e)
         }
+    }
+
+    acceptInvitation(id: string) {
+        this.LobbyRoom.send('acceptInvitation', id)
+    }
+
+    declineInvitation(id: string) {
+        this.LobbyRoom.send('declineInvitation', id)
     }
 }

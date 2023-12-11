@@ -109,10 +109,10 @@ export class UIManager {
 		resources.loadDir("UI", function (err, assets) {
 			assets.forEach(function (asset) {
 				if (asset instanceof Prefab) {
-					this.prefabs.set(asset.name, asset)
+					UIManager.inst.prefabs.set(asset.name, asset)
 				} else if (asset instanceof ImageAsset) {
 					if (asset.name === 'default') {
-						this.defaultAvatar.image = asset
+						UIManager.inst.defaultAvatar.image = asset
 					}
 				}
 			});

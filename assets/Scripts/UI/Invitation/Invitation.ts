@@ -2,6 +2,7 @@ import { _decorator, assetManager, Button, Component, ImageAsset, Node, RichText
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager';
 import { UIManager } from 'db://assets/Scripts/Managers/UIManager';
 import { UIState } from 'db://assets/Scripts/Enums/UIState';
+import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('Invitation')
@@ -29,11 +30,11 @@ export class Invitation extends Component {
         // Click event
 		this.acceptNode.on(Button.EventType.CLICK, (event) => {
 			AudioManager.inst.playOneShotUI('button_click')
-			// accept invitation
+            NetworkManager.inst.acceptInvitation(this.id)
 		})
         this.denyNode.on(Button.EventType.CLICK, (event) => {
 			AudioManager.inst.playOneShotUI('button_click')
-			// deny invitation
+            NetworkManager.inst.declineInvitation(this.id)
 		})
 
 		// Hover event
@@ -43,8 +44,6 @@ export class Invitation extends Component {
         this.denyNode.on(Node.EventType.MOUSE_ENTER, (event) => {
 			AudioManager.inst.playOneShotUI('button_hover')
 		})
-
-        
     }
 
     init(id: string, username: string, avatarUrl: string): void {
