@@ -2,6 +2,7 @@ import { _decorator, Component, Node, Button } from 'cc';
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager';
 import { UIManager } from 'db://assets/Scripts/Managers/UIManager';
 import { UIState } from 'db://assets/Scripts/Enums/UIState';
+import { NetworkManager } from '../../Managers/NetworkManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('CreateRoomButton')
@@ -14,7 +15,7 @@ export class CreateRoomButton extends Component {
 		// Click event
 		this.node.on(Button.EventType.CLICK, (event) => {
 			AudioManager.inst.playOneShotUI('button_click')
-			UIManager.inst.switchUIState(UIState.PartyMenu)
+			NetworkManager.inst.createRoom()
 		})
 
 		// Hover event

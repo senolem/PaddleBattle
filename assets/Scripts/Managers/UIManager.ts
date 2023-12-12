@@ -5,6 +5,7 @@ import { UIState } from 'db://assets/Scripts/Enums/UIState'
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
 import { InvitationData } from 'db://assets/Scripts/Components/InvitationData'
 import { Invitation } from 'db://assets/Scripts/UI/Invitation/Invitation'
+import { Notification } from 'db://assets/Scripts/UI/Notification/Notification'
 
 const view = View.instance
 
@@ -205,6 +206,14 @@ export class UIManager {
 
 		const invitation = invitationNode.getComponent(Invitation)
 		invitation.init(invitationData.id, invitationData.username, invitationData.avatarUrl)
+	}
+
+	showNotification(text: string) {
+		const notificationNode = instantiate(this.prefabs.get('Notification'))
+		notificationNode.parent = this.notifications
+
+		const notification = notificationNode.getComponent(Notification)
+		notification.init(text)
 	}
 }
 

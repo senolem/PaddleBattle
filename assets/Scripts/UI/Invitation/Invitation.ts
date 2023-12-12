@@ -1,4 +1,4 @@
-import { _decorator, assetManager, Button, Component, ImageAsset, Node, RichText, SpriteFrame, Texture2D } from 'cc';
+import { _decorator, assetManager, Button, Component, find, ImageAsset, Node, RichText, SpriteFrame, Texture2D } from 'cc';
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager';
 import { UIManager } from 'db://assets/Scripts/Managers/UIManager';
 import { UIState } from 'db://assets/Scripts/Enums/UIState';
@@ -17,14 +17,14 @@ export class Invitation extends Component {
     private playersOnline: RichText
 
     protected onLoad(): void {
-        this.avatar = this.node.getChildByName('AvatarSprite')
-        const usernameNode = this.node.getChildByName('Username')
+        this.avatar = find('InvitationLayout/Avatar/AvatarSprite', this.node)
+        const usernameNode = find('InvitationLayout/TitleLayout/Username', this.node)
         this.username = usernameNode.getComponent(RichText)
-        this.acceptNode = this.node.getChildByName('AcceptButton')
+        this.acceptNode = find('InvitationLayout/ButtonsLayout/AcceptButton', this.node)
         this.acceptButton = this.acceptNode.getComponent(Button)
-        this.denyNode = this.node.getChildByName('DenyButton')
+        this.denyNode = find('InvitationLayout/ButtonsLayout/DenyButton', this.node)
         this.denyButton = this.denyNode.getComponent(Button)
-        const playersOnlineNode = this.node.getChildByName('Message')
+        const playersOnlineNode = find('InvitationLayout/TitleLayout/Message', this.node)
         this.playersOnline = playersOnlineNode.getComponent(RichText)
 
         // Click event
@@ -56,7 +56,7 @@ export class Invitation extends Component {
             this.avatar.texture = texture;
         });
 
-        // set this.playersOnline.string
+        this.playersOnline.string = `${String(NetworkManager.inst.getOnlineUsers())} + players online`
         this.node.active = true
     }
 }

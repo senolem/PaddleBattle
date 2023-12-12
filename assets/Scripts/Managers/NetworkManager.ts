@@ -56,6 +56,11 @@ export class NetworkManager {
                 console.log("onLeave: ", code)
             })
 
+			this.LobbyRoom.onMessage('server_error', (error: string) => {
+				console.error(error)
+				UIManager.inst.showNotification(error)
+			})
+
 			this.LobbyRoom.onMessage('setAuthorization', (authorization: string) => {
 				GameManager.inst.store.setAuthorization(authorization)
 			})
@@ -76,6 +81,10 @@ export class NetworkManager {
         }
     }
 
+	createRoom() {
+        this.LobbyRoom.send('createRoom')
+    }
+
     acceptInvitation(id: string) {
         this.LobbyRoom.send('acceptInvitation', id)
     }
@@ -83,4 +92,8 @@ export class NetworkManager {
     declineInvitation(id: string) {
         this.LobbyRoom.send('declineInvitation', id)
     }
+
+	getOnlineUsers(): number {
+		return this.LobbyRoom.players.size
+	}
 }
