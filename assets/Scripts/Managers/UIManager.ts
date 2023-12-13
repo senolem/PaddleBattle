@@ -1,4 +1,4 @@
-import { _decorator, Node, View, ResolutionPolicy, director, Canvas, Button, instantiate, resources, Prefab, Texture2D, ImageAsset } from 'cc'
+import { _decorator, Node, View, ResolutionPolicy, director, Canvas, Button, instantiate, resources, Prefab, Texture2D, ImageAsset, find } from 'cc'
 const { ccclass, property } = _decorator
 import { gameStore, reaction } from 'db://assets/Scripts/Store'
 import { UIState } from 'db://assets/Scripts/Enums/UIState'
@@ -6,6 +6,8 @@ import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
 import { InvitationData } from 'db://assets/Scripts/Components/InvitationData'
 import { Invitation } from 'db://assets/Scripts/UI/Invitation/Invitation'
 import { Notification } from 'db://assets/Scripts/UI/Notification/Notification'
+import { MapsScrollView } from 'db://assets/Scripts/UI/RoomMenu/MapsScrollView'
+import { PlayersScrollView } from 'db://assets/Scripts/UI/RoomMenu/PlayersScrollView'
 
 const view = View.instance
 
@@ -26,11 +28,17 @@ export class UIManager {
 	public settingsMenu: Node
 	public audioSettingsMenu: Node
 	public controlsSettingsMenu: Node
-	public partyMenu: Node
+	public roomMenu: Node
 	public matchmakingMenu: Node
 	public notifications: Node
 	public prefabs: Map<string, Prefab> = new Map<string, Prefab>()
-	public defaultAvatar: Texture2D = new Texture2D()
+	public defaultAvatar: Texture2D
+	public mapsScrollViewNode: Node
+	public mapsScrollView: MapsScrollView
+	public playersScrollViewNode: Node
+	public playersScrollView: PlayersScrollView
+	public readyIcon: Texture2D
+	public notReadyIcon: Texture2D
 
 	constructor() {
 		// Create a new UIManager node and add it to the scene
@@ -56,7 +64,7 @@ export class UIManager {
 				this.settingsMenu.active = false
 				this.audioSettingsMenu.active = false
 				this.controlsSettingsMenu.active = false
-				this.partyMenu.active = false
+				this.roomMenu.active = false
 				this.matchmakingMenu.active = false
 
 				switch(value) {
@@ -90,9 +98,9 @@ export class UIManager {
 					}
 					break
 
-					case UIState.PartyMenu:
+					case UIState.RoomMenu:
 					{
-						this.partyMenu.active = true
+						this.roomMenu.active = true
 					}
 					break
 
@@ -152,9 +160,9 @@ export class UIManager {
 			}
 			break
 
-			case UIState.PartyMenu:
+			case UIState.RoomMenu:
 			{
-				GameManager.inst.store.setUIState(UIState.PartyMenu)
+				GameManager.inst.store.setUIState(UIState.RoomMenu)
 			}
 			break
 
@@ -192,17 +200,22 @@ export class UIManager {
 		this.canvas = canvas
 		this.menu = canvas.node.getChildByName("Menu")
 		this.playMenu = canvas.node.getChildByName("PlayMenu")
-		this.partyMenu = canvas.node.getChildByName("PartyMenu")
+		this.roomMenu = canvas.node.getChildByName("RoomMenu")
 		this.settingsMenu = canvas.node.getChildByName("SettingsMenu")
 		this.audioSettingsMenu = canvas.node.getChildByName("AudioSettingsMenu")
 		this.controlsSettingsMenu = canvas.node.getChildByName("ControlsSettingsMenu")
 		this.matchmakingMenu = canvas.node.getChildByName("MatchmakingMenu")
 		this.notifications = canvas.node.getChildByName("Notifications")
+		this.mapsScrollViewNode = find('RoomLayout/RoomLayout/MapsScrollView', this.roomMenu)
+		this.mapsScrollView = this.mapsScrollViewNode.getComponent(MapsScrollView)
+		this.playersScrollViewNode = find('RoomLayout/RoomPlayersLayout/PlayersScrollView', this.roomMenu)
+		this.playersScrollView = this.playersScrollViewNode.getComponent(PlayersScrollView)
 	}
 
 	showInvitation(invitationData: InvitationData) {
 		const invitationNode = instantiate(this.prefabs.get('Invitation'))
 		invitationNode.parent = this.notifications
+		console.log(invitationData)
 
 		const invitation = invitationNode.getComponent(Invitation)
 		invitation.init(invitationData.id, invitationData.username, invitationData.avatarUrl)

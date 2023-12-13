@@ -1,6 +1,6 @@
-import { _decorator, Node, director } from 'cc'
+import { _decorator, Node, director, assetManager, ImageAsset, Texture2D } from 'cc'
 const { ccclass, property } = _decorator
-import Colyseus from 'db://assets/Scripts/Colyseus/colyseus-cocos-creator.js'
+import Colyseus from 'db://colyseus-sdk/colyseus.js';
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
 import { UIManager } from 'db://assets/Scripts/Managers/UIManager'
 import { UIState } from 'db://assets/Scripts/Enums/UIState'
@@ -23,6 +23,7 @@ export class NetworkManager {
     private accessToken: string = "UNITY"
     private client!: Colyseus.Client
     private LobbyRoom: Colyseus.Room
+	private GameRoom: Colyseus.Room
 
 	constructor() {
 		// Create a new NetworkManager node and add it to the scene
@@ -45,12 +46,8 @@ export class NetworkManager {
         try {
             this.LobbyRoom = await this.client.join("LobbyRoom", { accessToken: this.accessToken })
 
-            console.log("Successfully joined LobbyRoom")
-            console.log("Current sessionId: ", this.LobbyRoom.sessionId)
-
-            this.LobbyRoom.onStateChange((state) => {
-                console.log("onStateChange: ", state)
-            })
+            console.log(`Successfully joined LobbyRoom (${this.LobbyRoom.id})`)
+            console.log(`Current sessionId : ${this.LobbyRoom.sessionId}`)
 
             this.LobbyRoom.onLeave((code) => {
                 console.log("onLeave: ", code)
@@ -65,11 +62,23 @@ export class NetworkManager {
 				GameManager.inst.store.setAuthorization(authorization)
 			})
 
-			this.LobbyRoom.onMessage('joinRoom', () => {
-				UIManager.inst.switchUIState(UIState.PartyMenu)
+			this.LobbyRoom.onMessage('joinRoom', async (reservation: any) => {
+				try {
+					UIManager.inst.switchUIState(UIState.RoomMenu)
+					await this.connectToGame(reservation)
+				} catch (error) {
+					UIManager.inst.switchUIState(UIState.PlayMenu)
+					console.error('Failed to join GameRoom')
+				}
 			})
 
 			this.LobbyRoom.onMessage('leaveRoom', () => {
+				this.GameRoom = null
+				UIManager.inst.playersScrollView.players.forEach((value, key) => {
+					value.destroy()
+				})
+				UIManager.inst.playersScrollView.players.clear()
+				console.log('Left GameRoom')
 				UIManager.inst.switchUIState(UIState.PlayMenu)
 			})
 
@@ -81,8 +90,42 @@ export class NetworkManager {
         }
     }
 
+	async connectToGame(reservation: any) {
+		try {
+			this.GameRoom = await this.client.consumeSeatReservation(reservation)
+			console.log(`Successfully joined GameRoom (${this.GameRoom.id})`)
+
+			this.GameRoom.onMessage('setMaps', (maps: Map<string, string>) => {
+				maps.forEach((value, key) => {
+					assetManager.loadRemote<ImageAsset>(value + '?authorization=' + GameManager.inst.store.getAuthorization, (err, imageAsset) => {
+						const thumbnail = new Texture2D();
+						thumbnail.image = imageAsset;
+						UIManager.inst.mapsScrollView.addMap(key, thumbnail)
+					});
+				})
+			})
+
+			this.GameRoom.state.listen('players', (value, previousValue) => {
+				value.forEach((value, key) => {
+					assetManager.loadRemote<ImageAsset>(value.avatarUrl + '?authorization=' + GameManager.inst.store.getAuthorization, (err, imageAsset) => {
+						const avatar = new Texture2D();
+						avatar.image = imageAsset;
+						UIManager.inst.playersScrollView.updatePlayer(value.id, value.username, avatar)
+					});
+				})
+			})
+		} catch (error) {
+			throw new Error(error)
+			this.leaveRoom()
+		}
+	}
+
 	createRoom() {
         this.LobbyRoom.send('createRoom')
+    }
+
+	leaveRoom() {
+        this.LobbyRoom.send('leaveRoom')
     }
 
     acceptInvitation(id: string) {
@@ -94,6 +137,6 @@ export class NetworkManager {
     }
 
 	getOnlineUsers(): number {
-		return this.LobbyRoom.players.size
+		return this.LobbyRoom.state.players.size
 	}
 }

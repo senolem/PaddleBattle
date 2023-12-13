@@ -7,7 +7,7 @@ export enum UIState {
 	SettingsMenu,
 	AudioSettingsMenu,
 	ControlsSettingsMenu,
-    PartyMenu,
+    RoomMenu,
     MatchmakingMenu
 }
 Enum(UIState)

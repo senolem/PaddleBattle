@@ -1,5 +1,4 @@
-// THIS VERSION USES "XMLHttpRequest" INSTEAD OF "fetch" FOR COMPATIBILITY WITH COCOS CREATOR
-// colyseus.js@0.15.14 (@colyseus/schema 2.0.9)
+// colyseus.js@0.15.9 (@colyseus/schema 2.0.9)
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
     typeof define === 'function' && define.amd ? define('colyseus.js', ['exports'], factory) :
@@ -1015,50 +1014,17 @@
         return serializer;
     }
 
-    /**
-     * The MIT License (MIT)
-     *
-     * Copyright 2016 Andrey Sitnik <andrey@sitnik.ru>
-     *
-     * Permission is hereby granted, free of charge, to any person obtaining a copy of
-     * this software and associated documentation files (the "Software"), to deal in
-     * the Software without restriction, including without limitation the rights to
-     * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-     * the Software, and to permit persons to whom the Software is furnished to do so,
-     * subject to the following conditions:
-     *
-     * The above copyright notice and this permission notice shall be included in all
-     * copies or substantial portions of the Software.
-     *
-     * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-     * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-     * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-     * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-     * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-     * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-     */
-    var createNanoEvents = function () { return ({
-        emit: function (event) {
-            var args = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                args[_i - 1] = arguments[_i];
-            }
-            var callbacks = this.events[event] || [];
-            for (var i = 0, length_1 = callbacks.length; i < length_1; i++) {
-                callbacks[i].apply(callbacks, args);
-            }
-        },
-        events: {},
-        on: function (event, cb) {
-            var _this = this;
-            var _a;
-            ((_a = this.events[event]) === null || _a === void 0 ? void 0 : _a.push(cb)) || (this.events[event] = [cb]);
-            return function () {
-                var _a;
-                _this.events[event] = (_a = _this.events[event]) === null || _a === void 0 ? void 0 : _a.filter(function (i) { return cb !== i; });
-            };
-        }
-    }); };
+    let createNanoEvents = () => ({
+      events: {},
+      emit(event, ...args) {
+    (this.events[event] || []).forEach(i => i(...args));
+      },
+      on(event, cb) {
+    (this.events[event] = this.events[event] || []).push(cb);
+        return () =>
+          (this.events[event] = (this.events[event] || []).filter(i => i !== cb))
+      }
+    });
 
     var EventEmitter = /** @class */ (function () {
         function EventEmitter() {
@@ -4472,7 +4438,7 @@
                 this.rootSchema = rootSchema;
                 this.serializer.state = new rootSchema();
             }
-            this.onError(function (code, message) { var _a; return (_a = console.warn) === null || _a === void 0 ? void 0 : _a.call(console, "colyseus.js - onError => (".concat(code, ") ").concat(message)); });
+            this.onError(function (code, message) { return console.warn("colyseus.js - onError => (".concat(code, ") ").concat(message)); });
             this.onLeave(function () { return _this.removeAllListeners(); });
         }
         Object.defineProperty(Room.prototype, "id", {
@@ -4488,9 +4454,8 @@
             room.connection = connection;
             connection.events.onmessage = Room.prototype.onMessageCallback.bind(room);
             connection.events.onclose = function (e) {
-                var _a;
                 if (!room.hasJoined) {
-                    (_a = console.warn) === null || _a === void 0 ? void 0 : _a.call(console, "Room connection was closed unexpectedly (".concat(e.code, "): ").concat(e.reason));
+                    console.warn("Room connection was closed unexpectedly (".concat(e.code, "): ").concat(e.reason));
                     room.onError.invoke(e.code, e.reason);
                     return;
                 }
@@ -4503,8 +4468,7 @@
                 }
             };
             connection.events.onerror = function (e) {
-                var _a;
-                (_a = console.warn) === null || _a === void 0 ? void 0 : _a.call(console, "Room, onError (".concat(e.code, "): ").concat(e.reason));
+                console.warn("Room, onError (".concat(e.code, "): ").concat(e.reason));
                 room.onError.invoke(e.code, e.reason);
             };
             connection.connect(endpoint);
@@ -4653,7 +4617,6 @@
             this.onStateChange.invoke(this.serializer.getState());
         };
         Room.prototype.dispatchMessage = function (type, message) {
-            var _a;
             var messageType = this.getMessageHandlerKey(type);
             if (this.onMessageHandlers.events[messageType]) {
                 this.onMessageHandlers.emit(messageType, message);
@@ -4662,7 +4625,7 @@
                 this.onMessageHandlers.emit('*', type, message);
             }
             else {
-                (_a = console.warn) === null || _a === void 0 ? void 0 : _a.call(console, "colyseus.js: onMessage() not registered for type '".concat(type, "'."));
+                console.warn("colyseus.js: onMessage() not registered for type '".concat(type, "'."));
             }
         };
         Room.prototype.destroy = function () {
@@ -5247,4 +5210,4 @@
     Object.defineProperty(exports, '__esModule', { value: true });
 
 }));
-//# sourceMappingURL=colyseus-cocos-creator.js.map
+//# sourceMappingURL=colyseus.js.map

@@ -1,4 +1,4 @@
-import { _decorator, Node, director } from 'cc'
+import { _decorator, Node, director, Texture2D } from 'cc'
 import { GameStateStore } from 'db://assets/Scripts/Store'
 import { gameStore, reaction } from 'db://assets/Scripts/Store'
 const { ccclass, property } = _decorator
@@ -15,6 +15,7 @@ export class GameManager {
 
 	private node!: Node
     public store!: GameStateStore
+	public maps: Map<string, Texture2D> = new Map<string, Texture2D>()
 
 	constructor() {
 		// Create a new GameManager node and add it to the scene
