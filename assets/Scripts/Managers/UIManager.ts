@@ -215,7 +215,6 @@ export class UIManager {
 	showInvitation(invitationData: InvitationData) {
 		const invitationNode = instantiate(this.prefabs.get('Invitation'))
 		invitationNode.parent = this.notifications
-		console.log(invitationData)
 
 		const invitation = invitationNode.getComponent(Invitation)
 		invitation.init(invitationData.id, invitationData.username, invitationData.avatarUrl)

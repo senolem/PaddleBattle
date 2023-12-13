@@ -85,6 +85,14 @@ export class NetworkManager {
 			this.LobbyRoom.onMessage('receivedInvitation', (invitation: InvitationData) => {
 				UIManager.inst.showInvitation(invitation)
 			})
+
+			this.LobbyRoom.onMessage('joinMatchmaking', async (reservation: any) => {
+				UIManager.inst.switchUIState(UIState.MatchmakingMenu)
+			})
+
+			this.LobbyRoom.onMessage('leaveMatchmaking', async (reservation: any) => {
+				UIManager.inst.switchUIState(UIState.PlayMenu)
+			})
         } catch (e) {
             console.error(e)
         }
@@ -115,8 +123,8 @@ export class NetworkManager {
 				})
 			})
 		} catch (error) {
-			throw new Error(error)
 			this.leaveRoom()
+			throw new Error(error)
 		}
 	}
 
@@ -129,12 +137,21 @@ export class NetworkManager {
     }
 
     acceptInvitation(id: string) {
+		console.log(id)
         this.LobbyRoom.send('acceptInvitation', id)
     }
 
     declineInvitation(id: string) {
         this.LobbyRoom.send('declineInvitation', id)
     }
+
+	joinMatchmaking() {
+		this.LobbyRoom.send('joinMatchmaking')
+	}
+
+	leaveMatchmaking() {
+		this.LobbyRoom.send('leaveMatchmaking')
+	}
 
 	getOnlineUsers(): number {
 		return this.LobbyRoom.state.players.size

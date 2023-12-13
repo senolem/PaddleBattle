@@ -34,10 +34,12 @@ export class Invitation extends Component {
 		this.acceptNode.on(Button.EventType.CLICK, (event) => {
 			AudioManager.inst.playOneShotUI('button_click')
             NetworkManager.inst.acceptInvitation(this.id)
+			this.node.destroy()
 		})
         this.denyNode.on(Button.EventType.CLICK, (event) => {
 			AudioManager.inst.playOneShotUI('button_click')
             NetworkManager.inst.declineInvitation(this.id)
+			this.node.destroy()
 		})
 
 		// Hover event
