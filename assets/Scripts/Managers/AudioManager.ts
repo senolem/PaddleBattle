@@ -1,5 +1,5 @@
 import { _decorator, Node, AudioSource, AudioClip, resources, director } from 'cc'
-const { ccclass, property } = _decorator;
+const { ccclass, property } = _decorator
 import { gameStore, reaction } from 'db://assets/Scripts/Store'
 
 @ccclass('AudioManager')
@@ -22,7 +22,7 @@ export class AudioManager {
 		// Create a new AudioManager node and add it to the scene
 		this.node = new Node()
 		this.node.name = 'AudioManager'
-		director.getScene().addChild(this.node);
+		director.getScene().addChild(this.node)
 
 		// Make it as a persistent node, so it won't be destroyed when scene changes
 		director.addPersistRootNode(this.node)
@@ -76,7 +76,7 @@ export class AudioManager {
 				if (asset instanceof AudioClip) {
 					AudioManager.inst.UIClips.set(asset.name, asset)
 				}
-			});
+			})
 		})
 	}
 

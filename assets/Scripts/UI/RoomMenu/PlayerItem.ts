@@ -1,6 +1,6 @@
-import { _decorator, Button, Component, find, Node, RichText, Sprite, Texture2D } from 'cc';
-import { UIManager } from '../../Managers/UIManager';
-const { ccclass, property } = _decorator;
+import { _decorator, Button, Component, find, Node, RichText, Sprite, SpriteFrame } from 'cc'
+import { UIManager } from 'db://assets/Scripts/Managers/UIManager'
+const { ccclass, property } = _decorator
 
 @ccclass('PlayerItem')
 export class PlayerItem extends Component {
@@ -20,8 +20,8 @@ export class PlayerItem extends Component {
 		this.playerReady = this.playerReadyNode.getComponent(Sprite)
 	}
 
-	init(username: string, avatar: Texture2D, ready: boolean): void {
-		this.playerAvatar.spriteFrame.texture = avatar
+	init(username: string, avatar: SpriteFrame, ready: boolean): void {
+		this.playerAvatar.spriteFrame = avatar
 		this.playerUsername.string = username
 		this.setReady(ready)
 	}

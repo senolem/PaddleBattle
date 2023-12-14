@@ -1,8 +1,7 @@
-import { _decorator, assetManager, Component, find, ImageAsset, instantiate, Node, Prefab, resources, Texture2D } from 'cc';
+import { _decorator, assetManager, Component, find, ImageAsset, instantiate, Node, Prefab, resources, SpriteFrame, Texture2D } from 'cc';
 import { UIManager } from 'db://assets/Scripts/Managers/UIManager';
-import { MapItem } from 'db://assets/Scripts/UI/RoomMenu/MapItem';
-import { PlayerItem } from './PlayerItem';
-import { GameManager } from '../../Managers/GameManager';
+import { PlayerItem } from 'db://assets/Scripts/UI/RoomMenu/PlayerItem';
+import { GameManager } from 'db://assets/Scripts/Managers/GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayersScrollView')
@@ -27,10 +26,18 @@ export class PlayersScrollView extends Component {
 		this.players.set(id, playerItemNode)
 		playerItemNode.parent = this.contentNode
 		assetManager.loadRemote<ImageAsset>(avatarUrl + '?authorization=' + GameManager.inst.store.getAuthorization, (err, imageAsset) => {
-			console.log('downloaded', avatarUrl)
-			const avatar = new Texture2D();
-			avatar.image = imageAsset;
-			playerItem.init(username, avatar, isReady)
+			if (err) {
+				console.log(`Failed to download avatar: ${avatarUrl} ${err}`)
+			}
+			else if (imageAsset) {
+				console.log(`Downloaded avatar: ${avatarUrl}`)
+				const avatarTexture = new Texture2D();
+				avatarTexture.image = imageAsset;
+				const avatarSpriteFrame = new SpriteFrame();
+				avatarSpriteFrame.texture = avatarTexture
+
+				playerItem.init(username, avatarSpriteFrame, isReady)
+			}
 		});
 	}
 

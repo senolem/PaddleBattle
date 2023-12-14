@@ -1,5 +1,5 @@
-import { _decorator, Button, Component, find, Node, RichText, Sprite, Texture2D } from 'cc';
-const { ccclass, property } = _decorator;
+import { _decorator, Button, Component, find, Node, RichText, Sprite, SpriteFrame, Texture2D } from 'cc'
+const { ccclass, property } = _decorator
 
 @ccclass('MapItem')
 export class MapItem extends Component {
@@ -19,8 +19,11 @@ export class MapItem extends Component {
 		})
 	}
 
-	init(name: string, thumbnail: Texture2D): void {
-		this.mapThumbnail.spriteFrame.texture = thumbnail
+	setThumbnail(thumbnail: SpriteFrame): void {
+		this.mapThumbnail.spriteFrame = thumbnail
+	}
+
+	setName(name: string) {
 		this.mapName.string = name
 	}
 }

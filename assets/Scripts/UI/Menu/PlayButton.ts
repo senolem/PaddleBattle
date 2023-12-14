@@ -1,8 +1,8 @@
-import { _decorator, Component, Node, Button, EventHandler } from 'cc';
-import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager';
-import { UIManager } from 'db://assets/Scripts/Managers/UIManager';
-import { UIState } from 'db://assets/Scripts/Enums/UIState';
-const { ccclass, property } = _decorator;
+import { _decorator, Component, Node, Button, EventHandler } from 'cc'
+import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
+import { UIManager } from 'db://assets/Scripts/Managers/UIManager'
+import { UIState } from 'db://assets/Scripts/Enums/UIState'
+const { ccclass, property } = _decorator
 
 @ccclass('PlayButton')
 export class PlayButton extends Component {

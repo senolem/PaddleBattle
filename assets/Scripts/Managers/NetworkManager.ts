@@ -1,10 +1,11 @@
 import { _decorator, Node, director, assetManager, ImageAsset, Texture2D, UI } from 'cc'
 const { ccclass, property } = _decorator
-import Colyseus from 'db://colyseus-sdk/colyseus.js';
+import Colyseus from 'db://colyseus-sdk/colyseus.js'
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
 import { UIManager } from 'db://assets/Scripts/Managers/UIManager'
 import { UIState } from 'db://assets/Scripts/Enums/UIState'
 import { InvitationData } from 'db://assets/Scripts/Components/InvitationData'
+import { MapData } from 'db://assets/Scripts/Components/MapData'
 
 @ccclass('NetworkManager')
 export class NetworkManager {
@@ -29,7 +30,7 @@ export class NetworkManager {
 		// Create a new NetworkManager node and add it to the scene
 		this.node = new Node()
 		this.node.name = 'NetworkManager'
-		director.getScene().addChild(this.node);
+		director.getScene().addChild(this.node)
 
 		// Make it as a persistent node, so it won't be destroyed when scene changes
 		director.addPersistRootNode(this.node)
@@ -43,58 +44,65 @@ export class NetworkManager {
 	}
 
 	async connect() {
-		try {
-			this.LobbyRoom = await this.client.join("LobbyRoom", { accessToken: this.accessToken })
+		if (!this.LobbyRoom || !this.LobbyRoom.connection.isOpen) {
+			try {
+				this.LobbyRoom = await this.client.join("LobbyRoom", { accessToken: this.accessToken })
 
-			console.log(`Successfully joined LobbyRoom (${this.LobbyRoom.id})`)
-			console.log(`Current sessionId : ${this.LobbyRoom.sessionId}`)
+				console.log(`Successfully joined LobbyRoom (${this.LobbyRoom.id})`)
+				console.log(`Current sessionId : ${this.LobbyRoom.sessionId}`)
 
-			this.LobbyRoom.onLeave((code) => {
-				console.log("onLeave: ", code)
-			})
-
-			this.LobbyRoom.onMessage('server_error', (error: string) => {
-				console.error(`[LobbyRoom] ${error}`)
-				UIManager.inst.showNotification(error)
-			})
-
-			this.LobbyRoom.onMessage('setAuthorization', (authorization: string) => {
-				GameManager.inst.store.setAuthorization(authorization)
-			})
-
-			this.LobbyRoom.onMessage('joinRoom', async (reservation: any) => {
-				try {
-					UIManager.inst.switchUIState(UIState.RoomMenu)
-					await this.connectToGame(reservation)
-				} catch (error) {
-					UIManager.inst.switchUIState(UIState.PlayMenu)
-					console.error('Failed to join GameRoom')
-				}
-			})
-
-			this.LobbyRoom.onMessage('leaveRoom', () => {
-				this.GameRoom = null
-				UIManager.inst.playersScrollView.players.forEach((value, key) => {
-					value.destroy()
+				this.LobbyRoom.onLeave((code) => {
+					console.log("onLeave: ", code)
+					if (code != 1000) {
+						UIManager.inst.showNetworkError('Connection to the server lost. Do you want to try to reconnect?')
+					}
 				})
-				UIManager.inst.playersScrollView.players.clear()
-				console.log('Left GameRoom')
-				UIManager.inst.switchUIState(UIState.PlayMenu)
-			})
 
-			this.LobbyRoom.onMessage('receivedInvitation', (invitation: InvitationData) => {
-				UIManager.inst.showInvitation(invitation)
-			})
+				this.LobbyRoom.onMessage('server_error', (error: string) => {
+					console.error(`[LobbyRoom] ${error}`)
+					UIManager.inst.showNotification(error)
+				})
 
-			this.LobbyRoom.onMessage('joinMatchmaking', async (reservation: any) => {
-				UIManager.inst.switchUIState(UIState.MatchmakingMenu)
-			})
+				this.LobbyRoom.onMessage('setAuthorization', (authorization: string) => {
+					GameManager.inst.store.setAuthorization(authorization)
+				})
 
-			this.LobbyRoom.onMessage('leaveMatchmaking', async (reservation: any) => {
-				UIManager.inst.switchUIState(UIState.PlayMenu)
-			})
-		} catch (error) {
-			console.error(error)
+				this.LobbyRoom.onMessage('joinRoom', async (reservation: any) => {
+					try {
+						UIManager.inst.switchUIState(UIState.RoomMenu)
+						await this.connectToGame(reservation)
+					} catch (error) {
+						UIManager.inst.switchUIState(UIState.PlayMenu)
+						UIManager.inst.showNotification('Failed to join GameRoom')
+					}
+				})
+
+				this.LobbyRoom.onMessage('leaveRoom', () => {
+					this.GameRoom = null
+					UIManager.inst.playersScrollView.players.forEach((value, key) => {
+						value.destroy()
+					})
+					UIManager.inst.playersScrollView.players.clear()
+					console.log('Left GameRoom')
+					UIManager.inst.switchUIState(UIState.PlayMenu)
+				})
+
+				this.LobbyRoom.onMessage('receivedInvitation', (invitation: InvitationData) => {
+					UIManager.inst.showInvitation(invitation)
+				})
+
+				this.LobbyRoom.onMessage('joinMatchmaking', () => {
+					UIManager.inst.switchUIState(UIState.MatchmakingMenu)
+				})
+
+				this.LobbyRoom.onMessage('leaveMatchmaking', () => {
+					UIManager.inst.switchUIState(UIState.PlayMenu)
+				})
+			} catch (error) {
+				console.error(error)
+			}
+		} else {
+			UIManager.inst.showNotification('Already connected to LobbyRoom')
 		}
 	}
 
@@ -108,14 +116,13 @@ export class NetworkManager {
 				UIManager.inst.showNotification(error)
 			})
 
-			this.GameRoom.onMessage('setMaps', (maps: Map<string, string>) => {
-				maps.forEach((value, key) => {
-					assetManager.loadRemote<ImageAsset>(value + '?authorization=' + GameManager.inst.store.getAuthorization, (err, imageAsset) => {
-						const thumbnail = new Texture2D();
-						thumbnail.image = imageAsset;
-						UIManager.inst.mapsScrollView.addMap(key, thumbnail)
-					});
-				})
+			this.GameRoom.onMessage('setMaps', (maps: MapData[]) => {
+				UIManager.inst.mapsScrollView.clearMaps()
+				if (maps) {
+					maps.forEach((value, index) => {
+						UIManager.inst.mapsScrollView.addMap(value)
+					})
+				}
 			})
 
 			this.GameRoom.onStateChange((state) => {
@@ -128,8 +135,10 @@ export class NetworkManager {
 				} else {
 					UIManager.inst.disableCountdown()
 				}
+
 				if (state.gameStarted) {
-					director.loadScene("Game", () => {
+					UIManager.inst.loadingScreen.show()
+					director.loadScene('Game', () => {
 						UIManager.inst.switchUIState(UIState.None)
 					})
 				}
@@ -190,6 +199,16 @@ export class NetworkManager {
 	}
 
 	getOnlineUsers(): number {
-		return this.LobbyRoom.state.players.size
+		if (this.LobbyRoom) {
+			return this.LobbyRoom.state.players.size
+		}
+		return -1
+	}
+
+	getCurrentMap(): number {
+		if (this.GameRoom) {
+			return this.GameRoom.state.selectedMap
+		}
+		return -1
 	}
 }

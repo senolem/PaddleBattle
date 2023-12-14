@@ -1,6 +1,7 @@
 import { _decorator, Node, director, Texture2D } from 'cc'
 import { GameStateStore } from 'db://assets/Scripts/Store'
 import { gameStore, reaction } from 'db://assets/Scripts/Store'
+import { GameMap } from 'db://assets/Scripts/Components/GameMap'
 const { ccclass, property } = _decorator
 
 @ccclass('GameManager')
@@ -15,13 +16,13 @@ export class GameManager {
 
 	private node!: Node
     public store!: GameStateStore
-	public maps: Map<string, Texture2D> = new Map<string, Texture2D>()
+	public maps: Map<number, GameMap> = new Map<number, GameMap>()
 
 	constructor() {
 		// Create a new GameManager node and add it to the scene
 		this.node = new Node()
 		this.node.name = 'GameManager'
-		director.getScene().addChild(this.node);
+		director.getScene().addChild(this.node)
 
         // Make it as a persistent node, so it won't be destroyed when scene changes
         director.addPersistRootNode(this.node)

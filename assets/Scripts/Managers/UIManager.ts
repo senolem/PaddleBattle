@@ -8,6 +8,8 @@ import { Invitation } from 'db://assets/Scripts/UI/Invitation/Invitation'
 import { Notification } from 'db://assets/Scripts/UI/Notification/Notification'
 import { MapsScrollView } from 'db://assets/Scripts/UI/RoomMenu/MapsScrollView'
 import { PlayersScrollView } from 'db://assets/Scripts/UI/RoomMenu/PlayersScrollView'
+import { LoadingScreen } from 'db://assets/Scripts/UI/LoadingScreen/LoadingScreen'
+import { NetworkError } from 'db://assets/Scripts/UI/Notification/NetworkError'
 
 const view = View.instance
 
@@ -42,21 +44,22 @@ export class UIManager {
 	public playersScrollView: PlayersScrollView
 	public readyIcon: SpriteFrame
 	public notReadyIcon: SpriteFrame
+	public loadingScreen: LoadingScreen
 
 	constructor() {
 		// Create a new UIManager node and add it to the scene
 		this.node = new Node()
 		this.node.name = 'UIManager'
-		director.getScene().addChild(this.node);
+		director.getScene().addChild(this.node)
 
 		// Make it as a persistent node, so it won't be destroyed when scene changes
 		director.addPersistRootNode(this.node)
 
 		// Make the game responsive
-		this.makeResponsive();
+		this.makeResponsive()
 		window.addEventListener('resize', () => {
-			this.makeResponsive();
-		});
+			this.makeResponsive()
+		})
 
 		// Watch for UIState changes
 		reaction(
@@ -131,7 +134,7 @@ export class UIManager {
 						UIManager.inst.notReadyIcon = asset
 					}
 				}
-			});
+			})
 		})
 	}
 
@@ -211,14 +214,14 @@ export class UIManager {
 
 	setCanvas(canvas: Canvas) {
 		this.canvas = canvas
-		this.menu = canvas.node.getChildByName("Menu")
-		this.playMenu = canvas.node.getChildByName("PlayMenu")
-		this.roomMenu = canvas.node.getChildByName("RoomMenu")
-		this.settingsMenu = canvas.node.getChildByName("SettingsMenu")
-		this.audioSettingsMenu = canvas.node.getChildByName("AudioSettingsMenu")
-		this.controlsSettingsMenu = canvas.node.getChildByName("ControlsSettingsMenu")
-		this.matchmakingMenu = canvas.node.getChildByName("MatchmakingMenu")
-		this.notifications = canvas.node.getChildByName("Notifications")
+		this.menu = canvas.node.getChildByName('Menu')
+		this.playMenu = canvas.node.getChildByName('PlayMenu')
+		this.roomMenu = canvas.node.getChildByName('RoomMenu')
+		this.settingsMenu = canvas.node.getChildByName('SettingsMenu')
+		this.audioSettingsMenu = canvas.node.getChildByName('AudioSettingsMenu')
+		this.controlsSettingsMenu = canvas.node.getChildByName('ControlsSettingsMenu')
+		this.matchmakingMenu = canvas.node.getChildByName('MatchmakingMenu')
+		this.notifications = canvas.node.getChildByName('Notifications')
 		this.countdownNode = this.roomMenu.getChildByName('CountdownLayout')
 		this.countdownValueNode = find('CountdownValue', this.countdownNode)
 		this.countdownValue = this.countdownValueNode.getComponent(RichText)
@@ -226,6 +229,7 @@ export class UIManager {
 		this.mapsScrollView = this.mapsScrollViewNode.getComponent(MapsScrollView)
 		this.playersScrollViewNode = find('RoomLayout/RoomPlayersLayout/PlayersScrollView', this.roomMenu)
 		this.playersScrollView = this.playersScrollViewNode.getComponent(PlayersScrollView)
+		this.loadingScreen = canvas.node.getChildByName('LoadingScreen').getComponent(LoadingScreen)
 	}
 
 	showInvitation(invitationData: InvitationData) {
@@ -242,6 +246,14 @@ export class UIManager {
 
 		const notification = notificationNode.getComponent(Notification)
 		notification.init(text)
+	}
+
+	showNetworkError(text: string) {
+		const networkErrorNode = instantiate(this.prefabs.get('NetworkError'))
+		networkErrorNode.parent = this.notifications
+
+		const networkError = networkErrorNode.getComponent(NetworkError)
+		networkError.init(text)
 	}
 
 	enableCountdown() {

@@ -1,10 +1,10 @@
-import { _decorator, CCBoolean, CCInteger, CCString } from 'cc';
+import { _decorator, CCBoolean, CCInteger, CCString } from 'cc'
 import { GameSettings } from 'db://assets/Scripts/Components/GameSettings'
-import mobx from 'mobx/dist/mobx.cjs.development.js';
-import { UIState } from 'db://assets/Scripts/Enums/UIState';
+import mobx from 'mobx/dist/mobx.cjs.development.js'
+import { UIState } from 'db://assets/Scripts/Enums/UIState'
 
-const { ccclass, property, type } = _decorator;
-export const { makeAutoObservable, autorun, reaction } = mobx;
+const { ccclass, property, type } = _decorator
+export const { makeAutoObservable, autorun, reaction } = mobx
 
 @ccclass('GameStateStore')
 export class GameStateStore {
@@ -62,7 +62,7 @@ export class GameStateStore {
 	}
 }
 
-export const gameStore = new GameStateStore();
+export const gameStore = new GameStateStore()
 //devtools
 //@ts-expect-error - Cocos can't properly import this library
-window.__MOBX_DEVTOOLS_GLOBAL_STORES_HOOK__ = { stores: { gameStore }, $mobx: mobx.$mobx };
+window.__MOBX_DEVTOOLS_GLOBAL_STORES_HOOK__ = { stores: { gameStore }, $mobx: mobx.$mobx }

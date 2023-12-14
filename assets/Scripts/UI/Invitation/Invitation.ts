@@ -1,10 +1,10 @@
-import { _decorator, assetManager, Button, Component, find, ImageAsset, Node, RichText, Sprite, SpriteFrame, Texture2D } from 'cc';
-import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager';
-import { UIManager } from 'db://assets/Scripts/Managers/UIManager';
-import { UIState } from 'db://assets/Scripts/Enums/UIState';
-import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager';
-import { GameManager } from 'db://assets/Scripts/Managers/GameManager';
-const { ccclass, property } = _decorator;
+import { _decorator, assetManager, Button, Component, find, ImageAsset, Node, RichText, Sprite, SpriteFrame, Texture2D } from 'cc'
+import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
+import { UIManager } from 'db://assets/Scripts/Managers/UIManager'
+import { UIState } from 'db://assets/Scripts/Enums/UIState'
+import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager'
+import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
+const { ccclass, property } = _decorator
 
 @ccclass('Invitation')
 export class Invitation extends Component {
@@ -55,10 +55,18 @@ export class Invitation extends Component {
         this.id = id
         this.username.string = username
 		assetManager.loadRemote<ImageAsset>(avatarUrl + '?authorization=' + GameManager.inst.store.getAuthorization, (err, imageAsset) => {
-            const texture = new Texture2D();
-            texture.image = imageAsset;
-            this.avatar.spriteFrame.texture = texture;
-        });
+			if (err) {
+				console.log(`Failed to download avatar: ${avatarUrl} ${err}`)
+			} else if (imageAsset) {
+				console.log(`Downloaded avatar: ${avatarUrl}`)
+				const avatarTexture = new Texture2D()
+				avatarTexture.image = imageAsset
+				const avatarSpriteFrame = new SpriteFrame()
+				avatarSpriteFrame.texture = avatarTexture
+
+				this.avatar.spriteFrame = avatarSpriteFrame
+			}
+        })
 
         this.node.active = true
     }
