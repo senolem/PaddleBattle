@@ -20,16 +20,17 @@ export class PlayerItem extends Component {
 		this.playerReady = this.playerReadyNode.getComponent(Sprite)
 	}
 
-	init(username: string, avatar: Texture2D): void {
+	init(username: string, avatar: Texture2D, ready: boolean): void {
 		this.playerAvatar.spriteFrame.texture = avatar
 		this.playerUsername.string = username
+		this.setReady(ready)
 	}
 
 	setReady(ready: boolean) {
 		if (ready) {
-			this.playerReady.spriteFrame.texture = UIManager.inst.readyIcon
+			this.playerReady.spriteFrame = UIManager.inst.readyIcon
 		} else {
-			this.playerReady.spriteFrame.texture = UIManager.inst.notReadyIcon
+			this.playerReady.spriteFrame = UIManager.inst.notReadyIcon
 		}
 	}
 }

@@ -15,9 +15,9 @@ export class Initialize extends Component {
 		AudioManager.inst
 		NetworkManager.inst
 
-		director.loadScene("Menu", () => {
-			AudioManager.inst.loadResources()
-			UIManager.inst.loadResources()
+		AudioManager.inst.loadResources()
+		UIManager.inst.loadResources()
+		director.loadScene("Menu", () => {	
 			UIManager.inst.setCanvas(director.getScene().getChildByName('UICanvas').getComponent(Canvas))
 			UIManager.inst.switchUIState(UIState.Menu)
 		});

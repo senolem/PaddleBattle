@@ -1,4 +1,4 @@
-import { _decorator, Node, director, assetManager, ImageAsset, Texture2D } from 'cc'
+import { _decorator, Node, director, assetManager, ImageAsset, Texture2D, UI } from 'cc'
 const { ccclass, property } = _decorator
 import Colyseus from 'db://colyseus-sdk/colyseus.js';
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
@@ -9,20 +9,20 @@ import { InvitationData } from 'db://assets/Scripts/Components/InvitationData'
 @ccclass('NetworkManager')
 export class NetworkManager {
 	private static _inst: NetworkManager
-    public static get inst(): NetworkManager {
-        if (this._inst == null) {
-            this._inst = new NetworkManager()
-        }
-        return this._inst
-    }
+	public static get inst(): NetworkManager {
+		if (this._inst == null) {
+			this._inst = new NetworkManager()
+		}
+		return this._inst
+	}
 
 	private node!: Node
-    private hostname: string = "127.0.0.1"
-    private port: number = 3000
-    private useSSL: boolean = false
-    private accessToken: string = "UNITY"
-    private client!: Colyseus.Client
-    private LobbyRoom: Colyseus.Room
+	private hostname: string = "127.0.0.1"
+	private port: number = 3000
+	private useSSL: boolean = false
+	private accessToken: string = "UNITY"
+	private client!: Colyseus.Client
+	private LobbyRoom: Colyseus.Room
 	private GameRoom: Colyseus.Room
 
 	constructor() {
@@ -31,30 +31,30 @@ export class NetworkManager {
 		this.node.name = 'NetworkManager'
 		director.getScene().addChild(this.node);
 
-        // Make it as a persistent node, so it won't be destroyed when scene changes
-        director.addPersistRootNode(this.node)
+		// Make it as a persistent node, so it won't be destroyed when scene changes
+		director.addPersistRootNode(this.node)
 
 		// Instantiate Colyseus Client
-        // connects into (ws|wss)://hostname[:port]
+		// connects into (ws|wss)://hostname[:port]
 		this.client = new Colyseus.Client(`${this.useSSL ? "wss" : "ws"}://${this.hostname}${([443, 80].includes(this.port) || this.useSSL) ? "" : `:${this.port}`}`)
 
 		// Connect into the room
-        this.connect()
+		this.connect()
 	}
 
-    async connect() {
-        try {
-            this.LobbyRoom = await this.client.join("LobbyRoom", { accessToken: this.accessToken })
+	async connect() {
+		try {
+			this.LobbyRoom = await this.client.join("LobbyRoom", { accessToken: this.accessToken })
 
-            console.log(`Successfully joined LobbyRoom (${this.LobbyRoom.id})`)
-            console.log(`Current sessionId : ${this.LobbyRoom.sessionId}`)
+			console.log(`Successfully joined LobbyRoom (${this.LobbyRoom.id})`)
+			console.log(`Current sessionId : ${this.LobbyRoom.sessionId}`)
 
-            this.LobbyRoom.onLeave((code) => {
-                console.log("onLeave: ", code)
-            })
+			this.LobbyRoom.onLeave((code) => {
+				console.log("onLeave: ", code)
+			})
 
 			this.LobbyRoom.onMessage('server_error', (error: string) => {
-				console.error(error)
+				console.error(`[LobbyRoom] ${error}`)
 				UIManager.inst.showNotification(error)
 			})
 
@@ -93,15 +93,20 @@ export class NetworkManager {
 			this.LobbyRoom.onMessage('leaveMatchmaking', async (reservation: any) => {
 				UIManager.inst.switchUIState(UIState.PlayMenu)
 			})
-        } catch (e) {
-            console.error(e)
-        }
-    }
+		} catch (error) {
+			console.error(error)
+		}
+	}
 
 	async connectToGame(reservation: any) {
 		try {
 			this.GameRoom = await this.client.consumeSeatReservation(reservation)
 			console.log(`Successfully joined GameRoom (${this.GameRoom.id})`)
+
+			this.GameRoom.onMessage('server_error', (error: string) => {
+				console.error(`[GameRoom] ${error}`)
+				UIManager.inst.showNotification(error)
+			})
 
 			this.GameRoom.onMessage('setMaps', (maps: Map<string, string>) => {
 				maps.forEach((value, key) => {
@@ -113,37 +118,68 @@ export class NetworkManager {
 				})
 			})
 
-			this.GameRoom.state.listen('players', (value, previousValue) => {
-				value.forEach((value, key) => {
-					assetManager.loadRemote<ImageAsset>(value.avatarUrl + '?authorization=' + GameManager.inst.store.getAuthorization, (err, imageAsset) => {
-						const avatar = new Texture2D();
-						avatar.image = imageAsset;
-						UIManager.inst.playersScrollView.updatePlayer(value.id, value.username, avatar)
-					});
+			this.GameRoom.onStateChange((state) => {
+				state.players.forEach((value, key) => {
+					UIManager.inst.playersScrollView.updatePlayer(value.id, value.ready)
 				})
+				if (state.countdownStarted) {
+					UIManager.inst.enableCountdown()
+					UIManager.inst.updateCountdown(state.countdown)
+				} else {
+					UIManager.inst.disableCountdown()
+				}
+				if (state.gameStarted) {
+					director.loadScene("Game", () => {
+						UIManager.inst.switchUIState(UIState.None)
+					})
+				}
+			})
+
+			this.GameRoom.state.players.onAdd((player, key) => {
+				if (player) {
+					UIManager.inst.playersScrollView.addPlayer(player.id, player.username, player.avatarUrl, player.ready)
+				}
+			})
+
+			this.GameRoom.state.players.onRemove((player, key) => {
+				if (player) {
+					UIManager.inst.playersScrollView.removePlayer(player.id)
+				}
+			})
+
+			this.GameRoom.state.players.onChange((player, key) => {
+				if (player) {
+					console.log(`${player.username} changed`)
+				}
 			})
 		} catch (error) {
-			this.leaveRoom()
-			throw new Error(error)
+			if (this.GameRoom) {
+				this.leaveRoom()
+				this.GameRoom = null
+			}
+			console.error(error)
 		}
 	}
 
 	createRoom() {
-        this.LobbyRoom.send('createRoom')
-    }
+		this.LobbyRoom.send('createRoom')
+	}
 
 	leaveRoom() {
-        this.LobbyRoom.send('leaveRoom')
-    }
+		this.LobbyRoom.send('leaveRoom')
+	}
 
-    acceptInvitation(id: string) {
-		console.log(id)
-        this.LobbyRoom.send('acceptInvitation', id)
-    }
+	setReady() {
+		this.GameRoom.send('setReady')
+	}
 
-    declineInvitation(id: string) {
-        this.LobbyRoom.send('declineInvitation', id)
-    }
+	acceptInvitation(id: string) {
+		this.LobbyRoom.send('acceptInvitation', id)
+	}
+
+	declineInvitation(id: string) {
+		this.LobbyRoom.send('declineInvitation', id)
+	}
 
 	joinMatchmaking() {
 		this.LobbyRoom.send('joinMatchmaking')

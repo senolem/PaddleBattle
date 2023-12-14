@@ -1,4 +1,4 @@
-import { _decorator, Node, View, ResolutionPolicy, director, Canvas, Button, instantiate, resources, Prefab, Texture2D, ImageAsset, find } from 'cc'
+import { _decorator, Node, View, ResolutionPolicy, director, Canvas, Button, instantiate, resources, Prefab, Texture2D, ImageAsset, find, SpriteFrame, RichText } from 'cc'
 const { ccclass, property } = _decorator
 import { gameStore, reaction } from 'db://assets/Scripts/Store'
 import { UIState } from 'db://assets/Scripts/Enums/UIState'
@@ -32,13 +32,16 @@ export class UIManager {
 	public matchmakingMenu: Node
 	public notifications: Node
 	public prefabs: Map<string, Prefab> = new Map<string, Prefab>()
-	public defaultAvatar: Texture2D
+	public defaultAvatar: SpriteFrame
+	public countdownNode: Node
+	public countdownValueNode: Node
+	public countdownValue: RichText
 	public mapsScrollViewNode: Node
 	public mapsScrollView: MapsScrollView
 	public playersScrollViewNode: Node
 	public playersScrollView: PlayersScrollView
-	public readyIcon: Texture2D
-	public notReadyIcon: Texture2D
+	public readyIcon: SpriteFrame
+	public notReadyIcon: SpriteFrame
 
 	constructor() {
 		// Create a new UIManager node and add it to the scene
@@ -119,9 +122,13 @@ export class UIManager {
 			assets.forEach(function (asset) {
 				if (asset instanceof Prefab) {
 					UIManager.inst.prefabs.set(asset.name, asset)
-				} else if (asset instanceof ImageAsset) {
+				} else if (asset instanceof SpriteFrame) {
 					if (asset.name === 'default') {
-						UIManager.inst.defaultAvatar.image = asset
+						UIManager.inst.defaultAvatar = asset
+					} else if (asset.name === 'ready') {
+						UIManager.inst.readyIcon = asset
+					} else if (asset.name === 'notReady') {
+						UIManager.inst.notReadyIcon = asset
 					}
 				}
 			});
@@ -171,6 +178,12 @@ export class UIManager {
 				GameManager.inst.store.setUIState(UIState.MatchmakingMenu)
 			}
 			break
+
+			case UIState.None:
+			{
+				GameManager.inst.store.setUIState(UIState.None)
+			}
+			break
 			
 			default:
 			{
@@ -206,6 +219,9 @@ export class UIManager {
 		this.controlsSettingsMenu = canvas.node.getChildByName("ControlsSettingsMenu")
 		this.matchmakingMenu = canvas.node.getChildByName("MatchmakingMenu")
 		this.notifications = canvas.node.getChildByName("Notifications")
+		this.countdownNode = this.roomMenu.getChildByName('CountdownLayout')
+		this.countdownValueNode = find('CountdownValue', this.countdownNode)
+		this.countdownValue = this.countdownValueNode.getComponent(RichText)
 		this.mapsScrollViewNode = find('RoomLayout/RoomLayout/MapsScrollView', this.roomMenu)
 		this.mapsScrollView = this.mapsScrollViewNode.getComponent(MapsScrollView)
 		this.playersScrollViewNode = find('RoomLayout/RoomPlayersLayout/PlayersScrollView', this.roomMenu)
@@ -226,6 +242,22 @@ export class UIManager {
 
 		const notification = notificationNode.getComponent(Notification)
 		notification.init(text)
+	}
+
+	enableCountdown() {
+		if (!this.countdownNode.active) {
+			this.countdownNode.active = true
+		}
+	}
+
+	disableCountdown() {
+		if (this.countdownNode.active) {
+			this.countdownNode.active = false
+		}
+	}
+
+	updateCountdown(countdown: number) {
+		this.countdownValue.string = String(countdown)
 	}
 }
 
