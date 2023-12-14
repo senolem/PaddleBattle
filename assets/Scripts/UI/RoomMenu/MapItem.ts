@@ -1,12 +1,18 @@
 import { _decorator, Button, Component, find, Node, RichText, Sprite, SpriteFrame, Texture2D } from 'cc'
+import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
+import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager'
 const { ccclass, property } = _decorator
 
 @ccclass('MapItem')
 export class MapItem extends Component {
+	private id: number
     private mapThumbnailNode: Node
 	private mapThumbnail: Sprite
 	private mapNameNode: Node
 	private mapName: RichText
+	private button: Button
+	private clickCallback: any
+	private hoverCallback: any
 
 	protected onLoad(): void {
 		this.mapThumbnailNode = find('MapThumbnail', this.node)
@@ -14,9 +20,30 @@ export class MapItem extends Component {
 		this.mapNameNode = find('MapName', this.node)
 		this.mapName = this.mapNameNode.getComponent(RichText)
 
-		this.node.on(Button.EventType.CLICK, (event) => {
-			console.log(`clicked on ${this.mapName} map`)
-		})
+		// Click event
+		this.clickCallback = (event) => {
+			AudioManager.inst.playOneShotUI('button_click')
+			NetworkManager.inst.setSelectedMap(this.id)
+		}
+
+		// Hover event
+		this.hoverCallback = (event) => {
+			AudioManager.inst.playOneShotUI('button_hover')
+		}
+	}
+
+	protected onEnable(): void {
+		this.node.on(Button.EventType.CLICK, this.clickCallback)
+		this.node.on(Node.EventType.MOUSE_ENTER, this.hoverCallback)
+	}
+
+	protected onDisable(): void {
+		this.node.off(Button.EventType.CLICK, this.clickCallback)
+		this.node.off(Node.EventType.MOUSE_ENTER, this.hoverCallback)
+	}
+
+	setId(id: number) {
+		this.id = id
 	}
 
 	setThumbnail(thumbnail: SpriteFrame): void {

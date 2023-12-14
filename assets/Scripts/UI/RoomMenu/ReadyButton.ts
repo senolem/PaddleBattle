@@ -9,7 +9,7 @@ export class ReadyButton extends Component {
 	private clickCallback: any
 	private hoverCallback: any
 
-	protected onEnable(): void {
+	protected onLoad(): void {
 		this.button = this.getComponent(Button)
 
 		// Click event
@@ -17,21 +17,20 @@ export class ReadyButton extends Component {
 			AudioManager.inst.playOneShotUI('button_click')
 			NetworkManager.inst.setReady()
 		}
-		this.node.on(Button.EventType.CLICK, this.clickCallback)
 
 		// Hover event
 		this.hoverCallback = (event) => {
 			AudioManager.inst.playOneShotUI('button_hover')
 		}
+	}
+
+	protected onEnable(): void {
+		this.node.on(Button.EventType.CLICK, this.clickCallback)
 		this.node.on(Node.EventType.MOUSE_ENTER, this.hoverCallback)
 	}
 
 	protected onDisable(): void {
 		this.node.off(Button.EventType.CLICK, this.clickCallback)
 		this.node.off(Node.EventType.MOUSE_ENTER, this.hoverCallback)
-	}
-
-	update(deltaTime: number) {
-		
 	}
 }

@@ -7,23 +7,31 @@ const { ccclass, property } = _decorator
 @ccclass('SettingsButton')
 export class SettingsButton extends Component {
 	private button: Button
+	private clickCallback: any
+	private hoverCallback: any
 
 	protected onLoad(): void {
 		this.button = this.getComponent(Button)
 
 		// Click event
-		this.node.on(Button.EventType.CLICK, (event) => {
+		this.clickCallback = (event) => {
 			AudioManager.inst.playOneShotUI('button_click')
 			UIManager.inst.switchUIState(UIState.SettingsMenu)
-		})
+		}
 
 		// Hover event
-		this.node.on(Node.EventType.MOUSE_ENTER, (event) => {
+		this.hoverCallback = (event) => {
 			AudioManager.inst.playOneShotUI('button_hover')
-		})
+		}
 	}
 
-    update(deltaTime: number) {
-        
-    }
+	protected onEnable(): void {
+		this.node.on(Button.EventType.CLICK, this.clickCallback)
+		this.node.on(Node.EventType.MOUSE_ENTER, this.hoverCallback)
+	}
+
+	protected onDisable(): void {
+		this.node.off(Button.EventType.CLICK, this.clickCallback)
+		this.node.off(Node.EventType.MOUSE_ENTER, this.hoverCallback)
+	}
 }

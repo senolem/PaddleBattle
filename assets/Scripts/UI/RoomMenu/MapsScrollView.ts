@@ -24,6 +24,7 @@ export class MapsScrollView extends Component {
 		mapItemNode.parent = this.contentNode
 
 		const mapItem = mapItemNode.getComponent(MapItem)
+		mapItem.setId(newMap.id)
 		mapItem.setName(newMap.displayName)
 
 		assetManager.loadRemote<ImageAsset>(map.thumbnailUrl + '?authorization=' + GameManager.inst.store.getAuthorization, (err, imageAsset) => {

@@ -205,7 +205,13 @@ export class NetworkManager {
 		return -1
 	}
 
-	getCurrentMap(): number {
+	setSelectedMap(id: number) {
+		if (this.GameRoom) {
+			this.GameRoom.send('setSelectedMap', id)
+		}
+	}
+
+	getSelectedMap(): number {
 		if (this.GameRoom) {
 			return this.GameRoom.state.selectedMap
 		}

@@ -8,6 +8,8 @@ export class Notification extends Component {
 	private textLabel: Label
     private okNode: Node
     private okButton: Button
+	private clickCallback: any
+	private hoverCallback: any
 
     protected onLoad(): void {
 		this.okNode = find('NotificationLayout/ButtonsLayout/OKButton', this.node)
@@ -16,19 +18,26 @@ export class Notification extends Component {
 		this.textLabel = this.textNode.getComponent(Label)
 
         // Click event
-		this.okNode.on(Button.EventType.CLICK, (event) => {
+		this.clickCallback = (event) => {
 			AudioManager.inst.playOneShotUI('button_click')
             this.node.destroy()
-		})
+		}
 
 		// Hover event
-		this.okNode.on(Node.EventType.MOUSE_ENTER, (event) => {
+		this.hoverCallback = (event) => {
 			AudioManager.inst.playOneShotUI('button_hover')
-		})
-		this.okNode.on(Node.EventType.MOUSE_ENTER, (event) => {
-			AudioManager.inst.playOneShotUI('button_hover')
-		})
+		}
     }
+
+	protected onEnable(): void {
+		this.node.on(Button.EventType.CLICK, this.clickCallback)
+		this.node.on(Node.EventType.MOUSE_ENTER, this.hoverCallback)
+	}
+
+	protected onDisable(): void {
+		this.node.off(Button.EventType.CLICK, this.clickCallback)
+		this.node.off(Node.EventType.MOUSE_ENTER, this.hoverCallback)
+	}
 
 	init(text: string): void {
 		this.textLabel.string = text

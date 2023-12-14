@@ -30,19 +30,23 @@ export class LoadingScreen extends Component {
 	}
 
 	show(): void {
-		const currentMap = NetworkManager.inst.getCurrentMap()
-		if (currentMap > -1) {
-			const map = GameManager.inst.maps.get(currentMap)
+		this.enabled = true
+		this.node.active = true
+		console.log('showing loading screen')
+		const selectedMap = NetworkManager.inst.getSelectedMap()
+		if (selectedMap > -1) {
+			const map = GameManager.inst.maps.get(selectedMap)
 			if (map) {
+				console.log('map')
 				this.displayName.string = map.displayName
 				if (map.background) {
+					console.log('settings bg spriteframe')
 					this.background.spriteFrame = map.background
 				}
 				if (map.thumbnail) {
+					console.log('settings thumbnail spriteframe')
 					this.thumbnail.spriteFrame = map.thumbnail
 				}
-				this.enabled = true
-				this.node.active = true
 			}
 		}
 	}

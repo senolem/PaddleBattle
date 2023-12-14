@@ -19,6 +19,10 @@ export class Invitation extends Component {
     private denyButton: Button
 	private playersOnlineNode: Node
     private playersOnline: RichText
+	private acceptClickCallback: any
+	private denyClickCallback: any
+	private acceptHoverCallback: any
+	private denyHoverCallback: any
 
     protected onLoad(): void {
         this.avatarNode = find('InvitationLayout/Avatar/AvatarSprite', this.node)
@@ -31,25 +35,41 @@ export class Invitation extends Component {
         this.denyButton = this.denyNode.getComponent(Button)
 
         // Click event
-		this.acceptNode.on(Button.EventType.CLICK, (event) => {
+		this.acceptClickCallback = (event) => {
 			AudioManager.inst.playOneShotUI('button_click')
             NetworkManager.inst.acceptInvitation(this.id)
 			this.node.destroy()
-		})
-        this.denyNode.on(Button.EventType.CLICK, (event) => {
+		}
+
+		this.denyClickCallback = (event) => {
 			AudioManager.inst.playOneShotUI('button_click')
             NetworkManager.inst.declineInvitation(this.id)
 			this.node.destroy()
-		})
+		}
 
 		// Hover event
-		this.acceptNode.on(Node.EventType.MOUSE_ENTER, (event) => {
+		this.acceptHoverCallback = (event) => {
 			AudioManager.inst.playOneShotUI('button_hover')
-		})
-        this.denyNode.on(Node.EventType.MOUSE_ENTER, (event) => {
+		}
+		
+        this.denyHoverCallback = (event) => {
 			AudioManager.inst.playOneShotUI('button_hover')
-		})
+		}
     }
+
+	protected onEnable(): void {
+		this.acceptNode.on(Button.EventType.CLICK, this.acceptClickCallback)
+		this.denyNode.on(Button.EventType.CLICK, this.denyClickCallback)
+		this.node.on(Node.EventType.MOUSE_ENTER, this.acceptHoverCallback)
+		this.node.on(Node.EventType.MOUSE_ENTER, this.denyHoverCallback)
+	}
+
+	protected onDisable(): void {
+		this.node.off(Button.EventType.CLICK, this.acceptClickCallback)
+		this.node.off(Button.EventType.CLICK, this.denyClickCallback)
+		this.node.off(Node.EventType.MOUSE_ENTER, this.acceptHoverCallback)
+		this.node.off(Node.EventType.MOUSE_ENTER, this.denyHoverCallback)
+	}
 
     init(id: string, username: string, avatarUrl: string): void {
         this.id = id
