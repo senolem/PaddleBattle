@@ -1,4 +1,4 @@
-import { _decorator, Component, find, Node, RichText, Sprite, Texture2D } from 'cc'
+import { _decorator, Component, find, Node, Label, Sprite, Texture2D } from 'cc'
 import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager'
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
 const { ccclass, property } = _decorator
@@ -9,9 +9,9 @@ export class LoadingScreen extends Component {
 	private thumbnailNode: Node
 	private thumbnail: Sprite
 	private displayNameNode: Node
-	private displayName: RichText
+	private displayName: Label
 	private loadingInfoNode: Node
-	private loadingInfo: RichText
+	private loadingInfo: Label
 	private spinner: Node
 
 	protected onLoad(): void {
@@ -19,9 +19,9 @@ export class LoadingScreen extends Component {
 		this.thumbnailNode = find('LoadingLayout/MapLayout/Thumbnail', this.node)
 		this.thumbnail = this.thumbnailNode.getComponent(Sprite)
 		this.displayNameNode = find('LoadingLayout/MapLayout/DisplayName', this.node)
-		this.displayName = this.displayNameNode.getComponent(RichText)
+		this.displayName = this.displayNameNode.getComponent(Label)
 		this.loadingInfoNode = find('LoadingLayout/LoadingLayout/TextLayout/LoadingInfo', this.node)
-		this.loadingInfo = this.loadingInfoNode.getComponent(RichText)
+		this.loadingInfo = this.loadingInfoNode.getComponent(Label)
 		this.spinner = find('LoadingLayout/LoadingLayout/SpinnerLayout/Spinner', this.node)
 	}
 

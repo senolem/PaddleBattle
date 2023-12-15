@@ -1,4 +1,4 @@
-import { _decorator, Node, View, ResolutionPolicy, director, Canvas, Button, instantiate, resources, Prefab, Texture2D, ImageAsset, find, SpriteFrame, RichText } from 'cc'
+import { _decorator, Node, View, ResolutionPolicy, director, Canvas, Button, instantiate, resources, Prefab, Texture2D, ImageAsset, find, SpriteFrame, Label } from 'cc'
 const { ccclass, property } = _decorator
 import { gameStore, reaction } from 'db://assets/Scripts/Store'
 import { UIState } from 'db://assets/Scripts/Enums/UIState'
@@ -37,7 +37,7 @@ export class UIManager {
 	public defaultAvatar: SpriteFrame
 	public countdownNode: Node
 	public countdownValueNode: Node
-	public countdownValue: RichText
+	public countdownValue: Label
 	public mapsScrollViewNode: Node
 	public mapsScrollView: MapsScrollView
 	public playersScrollViewNode: Node
@@ -224,7 +224,7 @@ export class UIManager {
 		this.notifications = canvas.node.getChildByName('Notifications')
 		this.countdownNode = this.roomMenu.getChildByName('CountdownLayout')
 		this.countdownValueNode = find('CountdownValue', this.countdownNode)
-		this.countdownValue = this.countdownValueNode.getComponent(RichText)
+		this.countdownValue = this.countdownValueNode.getComponent(Label)
 		this.mapsScrollViewNode = find('RoomLayout/RoomLayout/MapsScrollView', this.roomMenu)
 		this.mapsScrollView = this.mapsScrollViewNode.getComponent(MapsScrollView)
 		this.playersScrollViewNode = find('RoomLayout/RoomPlayersLayout/PlayersScrollView', this.roomMenu)

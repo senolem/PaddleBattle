@@ -1,4 +1,4 @@
-import { _decorator, assetManager, Button, Component, find, ImageAsset, Node, RichText, Sprite, SpriteFrame, Texture2D } from 'cc'
+import { _decorator, assetManager, Button, Component, find, ImageAsset, Node, Label, Sprite, SpriteFrame, Texture2D } from 'cc'
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
 import { UIManager } from 'db://assets/Scripts/Managers/UIManager'
 import { UIState } from 'db://assets/Scripts/Enums/UIState'
@@ -12,13 +12,13 @@ export class Invitation extends Component {
     private avatarNode: Node
 	private avatar: Sprite
 	private usernameNode: Node
-    private username: RichText
+    private username: Label
     private acceptNode: Node
     private acceptButton: Button
     private denyNode: Node
     private denyButton: Button
 	private playersOnlineNode: Node
-    private playersOnline: RichText
+    private playersOnline: Label
 	private acceptClickCallback: any
 	private denyClickCallback: any
 	private acceptHoverCallback: any
@@ -28,7 +28,7 @@ export class Invitation extends Component {
         this.avatarNode = find('InvitationLayout/Avatar/AvatarSprite', this.node)
 		this.avatar = this.avatarNode.getComponent(Sprite)
         this.usernameNode = find('InvitationLayout/TitleLayout/Username', this.node)
-        this.username = this.usernameNode.getComponent(RichText)
+        this.username = this.usernameNode.getComponent(Label)
         this.acceptNode = find('InvitationLayout/ButtonsLayout/AcceptButton', this.node)
         this.acceptButton = this.acceptNode.getComponent(Button)
         this.denyNode = find('InvitationLayout/ButtonsLayout/DenyButton', this.node)

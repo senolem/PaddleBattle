@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, find, Node, RichText, Sprite, SpriteFrame, Texture2D } from 'cc'
+import { _decorator, Button, Component, find, Node, Label, Sprite, SpriteFrame, Texture2D } from 'cc'
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
 import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager'
 const { ccclass, property } = _decorator
@@ -9,7 +9,7 @@ export class MapItem extends Component {
     private mapThumbnailNode: Node
 	private mapThumbnail: Sprite
 	private mapNameNode: Node
-	private mapName: RichText
+	private mapName: Label
 	private button: Button
 	private clickCallback: any
 	private hoverCallback: any
@@ -17,8 +17,8 @@ export class MapItem extends Component {
 	protected onLoad(): void {
 		this.mapThumbnailNode = find('MapThumbnail', this.node)
 		this.mapThumbnail = this.mapThumbnailNode.getComponent(Sprite)
-		this.mapNameNode = find('MapName', this.node)
-		this.mapName = this.mapNameNode.getComponent(RichText)
+		this.mapNameNode = find('MapNameLayout/MapName', this.node)
+		this.mapName = this.mapNameNode.getComponent(Label)
 
 		// Click event
 		this.clickCallback = (event) => {

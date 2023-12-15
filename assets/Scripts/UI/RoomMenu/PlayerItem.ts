@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, find, Node, RichText, Sprite, SpriteFrame } from 'cc'
+import { _decorator, Button, Component, find, Node, Label, Sprite, SpriteFrame } from 'cc'
 import { UIManager } from 'db://assets/Scripts/Managers/UIManager'
 const { ccclass, property } = _decorator
 
@@ -7,15 +7,15 @@ export class PlayerItem extends Component {
     private playerAvatarNode: Node
 	private playerAvatar: Sprite
 	private playerUsernameNode: Node
-	private playerUsername: RichText
+	private playerUsername: Label
 	private playerReadyNode: Node
 	private playerReady: Sprite
 
 	protected onLoad(): void {
 		this.playerAvatarNode = find('PlayerAvatar', this.node)
 		this.playerAvatar = this.playerAvatarNode.getComponent(Sprite)
-		this.playerUsernameNode = find('PlayerUsername', this.node)
-		this.playerUsername = this.playerUsernameNode.getComponent(RichText)
+		this.playerUsernameNode = find('PlayerUsernameLayout/PlayerUsername', this.node)
+		this.playerUsername = this.playerUsernameNode.getComponent(Label)
 		this.playerReadyNode = find('PlayerReady', this.node)
 		this.playerReady = this.playerReadyNode.getComponent(Sprite)
 	}
