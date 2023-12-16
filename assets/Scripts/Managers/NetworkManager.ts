@@ -140,9 +140,6 @@ export class NetworkManager {
 			})
 
 			this.GameRoom.onStateChange((state) => {
-				state.players.forEach((value, key) => {
-					UIManager.inst.playersScrollView.updatePlayer(value.id, value.ready)
-				})
 				if (state.countdownStarted) {
 					UIManager.inst.enableCountdown()
 					UIManager.inst.updateCountdown(state.countdown)
@@ -165,18 +162,16 @@ export class NetworkManager {
 			this.GameRoom.state.players.onAdd((player, key) => {
 				if (player) {
 					UIManager.inst.playersScrollView.addPlayer(player.id, player.username, player.avatarUrl, player.ready)
+
+					const unbindCallback = player.listen('ready', (value) => {
+						UIManager.inst.playersScrollView.updatePlayer(player.id, value)
+					})
 				}
 			})
 
 			this.GameRoom.state.players.onRemove((player, key) => {
 				if (player) {
 					UIManager.inst.playersScrollView.removePlayer(player.id)
-				}
-			})
-
-			this.GameRoom.state.players.onChange((player, key) => {
-				if (player) {
-					console.log(`${player.username} changed`)
 				}
 			})
 		} catch (error) {

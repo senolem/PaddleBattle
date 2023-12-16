@@ -43,8 +43,12 @@ export class PlayersScrollView extends Component {
 
 	updatePlayer(id: number, isReady: boolean): void {
 		const existingNode = this.players.get(id)
-		const playerItem = existingNode.getComponent(PlayerItem)
-		playerItem.setReady(isReady)
+		if (existingNode) {
+			const playerItem = existingNode.getComponent(PlayerItem)
+			playerItem.setReady(isReady)
+		} else {
+			console.error(`No player found for id ${id}`)
+		}
 	}
 
 	removePlayer(id: number): void {

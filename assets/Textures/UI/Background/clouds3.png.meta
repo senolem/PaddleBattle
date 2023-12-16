@@ -2,7 +2,7 @@
   "ver": "1.0.26",
   "importer": "image",
   "imported": true,
-  "uuid": "830ab174-4c6e-4d55-a103-3363d3314308",
+  "uuid": "1a0bc623-58f7-42ad-a9ea-ea3f65a130db",
   "files": [
     ".json",
     ".png"
@@ -10,8 +10,8 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "830ab174-4c6e-4d55-a103-3363d3314308@6c48a",
-      "displayName": "glacial_mountains",
+      "uuid": "1a0bc623-58f7-42ad-a9ea-ea3f65a130db@6c48a",
+      "displayName": "clouds3",
       "id": "6c48a",
       "name": "texture",
       "userData": {
@@ -22,7 +22,7 @@
         "mipfilter": "none",
         "anisotropy": 0,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "830ab174-4c6e-4d55-a103-3363d3314308",
+        "imageUuidOrDatabaseUri": "1a0bc623-58f7-42ad-a9ea-ea3f65a130db",
         "visible": false
       },
       "ver": "1.0.22",
@@ -34,8 +34,8 @@
     },
     "f9941": {
       "importer": "sprite-frame",
-      "uuid": "830ab174-4c6e-4d55-a103-3363d3314308@f9941",
-      "displayName": "glacial_mountains",
+      "uuid": "1a0bc623-58f7-42ad-a9ea-ea3f65a130db@f9941",
+      "displayName": "clouds3",
       "id": "f9941",
       "name": "spriteFrame",
       "userData": {
@@ -114,7 +114,7 @@
           ]
         },
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "830ab174-4c6e-4d55-a103-3363d3314308@6c48a",
+        "imageUuidOrDatabaseUri": "1a0bc623-58f7-42ad-a9ea-ea3f65a130db@6c48a",
         "atlasUuid": ""
       },
       "ver": "1.0.12",
@@ -129,6 +129,6 @@
     "hasAlpha": true,
     "type": "sprite-frame",
     "fixAlphaTransparencyArtifacts": true,
-    "redirect": "830ab174-4c6e-4d55-a103-3363d3314308@f9941"
+    "redirect": "1a0bc623-58f7-42ad-a9ea-ea3f65a130db@f9941"
   }
 }
