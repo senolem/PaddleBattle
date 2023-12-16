@@ -1,4 +1,4 @@
-import { _decorator, Node, director, Texture2D } from 'cc'
+import { _decorator, Node, director, Texture2D, SpriteFrame, AudioClip } from 'cc'
 import { GameStateStore } from 'db://assets/Scripts/Store'
 import { gameStore, reaction } from 'db://assets/Scripts/Store'
 import { GameMap } from 'db://assets/Scripts/Components/GameMap'
@@ -17,6 +17,9 @@ export class GameManager {
 	private node!: Node
     public store!: GameStateStore
 	public maps: Map<number, GameMap> = new Map<number, GameMap>()
+	public thumbnailCache: Map<string, SpriteFrame> = new Map<string, SpriteFrame>()
+	public backgroundCache: Map<string, SpriteFrame> = new Map<string, SpriteFrame>()
+	public musicCache: Map<string, AudioClip> = new Map<string, AudioClip>()
 
 	constructor() {
 		// Create a new GameManager node and add it to the scene

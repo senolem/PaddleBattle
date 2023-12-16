@@ -10,15 +10,18 @@ export class MapItem extends Component {
 	private mapThumbnail: Sprite
 	private mapNameNode: Node
 	private mapName: Label
+	private mapSelectedNode: Node
 	private button: Button
 	private clickCallback: any
 	private hoverCallback: any
 
 	protected onLoad(): void {
+		this.button = this.node.getComponent(Button)
 		this.mapThumbnailNode = find('MapThumbnail', this.node)
 		this.mapThumbnail = this.mapThumbnailNode.getComponent(Sprite)
 		this.mapNameNode = find('MapNameLayout/MapName', this.node)
 		this.mapName = this.mapNameNode.getComponent(Label)
+		this.mapSelectedNode = find('MapSelected', this.node)
 
 		// Click event
 		this.clickCallback = (event) => {
@@ -52,6 +55,18 @@ export class MapItem extends Component {
 
 	setName(name: string) {
 		this.mapName.string = name
+	}
+
+	setSelected(selected: boolean) {
+		if (selected) {
+			this.mapSelectedNode.active = true
+		} else {
+			this.mapSelectedNode.active = false
+		}
+	}
+
+	getId(): number {
+		return this.id
 	}
 }
 

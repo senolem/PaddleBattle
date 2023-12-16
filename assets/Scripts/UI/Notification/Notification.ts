@@ -30,13 +30,13 @@ export class Notification extends Component {
     }
 
 	protected onEnable(): void {
-		this.node.on(Button.EventType.CLICK, this.clickCallback)
-		this.node.on(Node.EventType.MOUSE_ENTER, this.hoverCallback)
+		this.okNode.on(Button.EventType.CLICK, this.clickCallback)
+		this.okNode.on(Node.EventType.MOUSE_ENTER, this.hoverCallback)
 	}
 
 	protected onDisable(): void {
-		this.node.off(Button.EventType.CLICK, this.clickCallback)
-		this.node.off(Node.EventType.MOUSE_ENTER, this.hoverCallback)
+		this.okNode.off(Button.EventType.CLICK, this.clickCallback)
+		this.okNode.off(Node.EventType.MOUSE_ENTER, this.hoverCallback)
 	}
 
 	init(text: string): void {

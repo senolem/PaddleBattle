@@ -116,12 +116,26 @@ export class NetworkManager {
 				UIManager.inst.showNotification(error)
 			})
 
+			this.GameRoom.onMessage('updateMaps', (maps: MapData[]) => {
+				GameManager.inst.thumbnailCache.clear()
+				GameManager.inst.backgroundCache.clear()
+				GameManager.inst.musicCache.clear()
+				UIManager.inst.mapsScrollView.clearMaps()
+				if (maps) {
+					maps.forEach((value, index) => {
+						UIManager.inst.mapsScrollView.addMap(value)
+					})
+					UIManager.inst.mapsScrollView.setSelectedMap(this.GameRoom.state.selectedMap)
+				}
+			})
+
 			this.GameRoom.onMessage('setMaps', (maps: MapData[]) => {
 				UIManager.inst.mapsScrollView.clearMaps()
 				if (maps) {
 					maps.forEach((value, index) => {
 						UIManager.inst.mapsScrollView.addMap(value)
 					})
+					UIManager.inst.mapsScrollView.setSelectedMap(this.GameRoom.state.selectedMap)
 				}
 			})
 
@@ -141,6 +155,10 @@ export class NetworkManager {
 					director.loadScene('Game', () => {
 						UIManager.inst.switchUIState(UIState.None)
 					})
+				}
+
+				if (state.selectedMap) {
+					UIManager.inst.mapsScrollView.setSelectedMap(state.selectedMap)
 				}
 			})
 

@@ -32,12 +32,12 @@ export class NetworkError extends Component {
     }
 
 	protected onEnable(): void {
-		this.node.on(Button.EventType.CLICK, this.clickCallback)
-		this.node.on(Node.EventType.MOUSE_ENTER, this.hoverCallback)
+		this.reconnectNode.on(Button.EventType.CLICK, this.clickCallback)
+		this.reconnectNode.on(Node.EventType.MOUSE_ENTER, this.hoverCallback)
 	}
 
 	protected onDisable(): void {
-		this.node.off(Button.EventType.CLICK, this.clickCallback)
+		this.reconnectNode.off(Button.EventType.CLICK, this.clickCallback)
 		this.node.off(Node.EventType.MOUSE_ENTER, this.hoverCallback)
 	}
 
