@@ -1,4 +1,4 @@
-import { _decorator, Component, find, Node, Label, Sprite, Texture2D } from 'cc'
+import { _decorator, Component, find, Node, Label, Sprite, Texture2D, AnimationComponent } from 'cc'
 import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager'
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
 const { ccclass, property } = _decorator
@@ -12,6 +12,7 @@ export class LoadingScreen extends Component {
 	private displayName: Label
 	private loadingInfoNode: Node
 	private loadingInfo: Label
+	private animation: AnimationComponent
 	private spinner: Node
 
 	protected onLoad(): void {
@@ -23,6 +24,11 @@ export class LoadingScreen extends Component {
 		this.loadingInfoNode = find('LoadingLayout/LoadingLayout/TextLayout/LoadingInfo', this.node)
 		this.loadingInfo = this.loadingInfoNode.getComponent(Label)
 		this.spinner = find('LoadingLayout/LoadingLayout/SpinnerLayout/Spinner', this.node)
+		this.animation = this.node.getComponent(AnimationComponent)
+	}
+
+	protected onEnable(): void {
+		this.animation.play()
 	}
 
 	protected update(dt: number): void {
@@ -32,19 +38,15 @@ export class LoadingScreen extends Component {
 	show(): void {
 		this.enabled = true
 		this.node.active = true
-		console.log('showing loading screen')
 		const selectedMap = NetworkManager.inst.getSelectedMap()
 		if (selectedMap > -1) {
 			const map = GameManager.inst.maps.get(selectedMap)
 			if (map) {
-				console.log('map')
 				this.displayName.string = map.displayName
 				if (map.background) {
-					console.log('settings bg spriteframe')
 					this.background.spriteFrame = map.background
 				}
 				if (map.thumbnail) {
-					console.log('settings thumbnail spriteframe')
 					this.thumbnail.spriteFrame = map.thumbnail
 				}
 			}
