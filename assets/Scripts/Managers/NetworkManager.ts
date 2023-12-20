@@ -158,9 +158,11 @@ export class NetworkManager {
 					const selectedMap = GameManager.inst.maps.get(this.GameRoom.state.selectedMap)
 					GameManager.inst.game.setBackground(selectedMap.background)
 					//GameManager.inst.game.setMusic(selectedMap.music)
-					GameManager.inst.game.setLeftPlayer(GameManager.inst.avatarCache.get(this.GameRoom.state.leftPlayer.avatarUrl), this.GameRoom.state.leftPlayer.username)
-					GameManager.inst.game.setRightPlayer(GameManager.inst.avatarCache.get(this.GameRoom.state.rightPlayer.avatarUrl), this.GameRoom.state.rightPlayer.username)
-					GameManager.inst.game.setScores(this.GameRoom.state.leftPlayer.score, this.GameRoom.state.rightPlayer.score)
+					const leftPlayer = this.GameRoom.state.players.get(this.GameRoom.state.leftPlayer)
+					const rightPlayer = this.GameRoom.state.players.get(this.GameRoom.state.rightPlayer)
+					GameManager.inst.game.setLeftPlayer(GameManager.inst.avatarCache.get(leftPlayer.avatarUrl), leftPlayer.username)
+					GameManager.inst.game.setRightPlayer(GameManager.inst.avatarCache.get(rightPlayer.avatarUrl), rightPlayer.username)
+					GameManager.inst.game.setScores(rightPlayer.score, rightPlayer.score)
 					UIManager.inst.loadingScreen.setLoadingInfo('Instancing room')
 					this.GameRoom.send('clientReady')
 					UIManager.inst.loadingScreen.setLoadingInfo('Waiting for other players')
@@ -188,10 +190,9 @@ export class NetworkManager {
 				UIManager.inst.mapsScrollView.setSelectedMap(value)
 			})
 
-			this.GameRoom.state.listen('ballPosition', (value) => {
+			this.GameRoom.state.ballPosition.onChange(() => {
 				if (GameManager.inst.game) {
-					GameManager.inst.game.moveBall(value)
-					console.log(`moving ball to ${value.x} ${value.y}`)
+					GameManager.inst.game.moveBall(this.GameRoom.state.ballPosition)
 				}
 			})
 
@@ -217,7 +218,7 @@ export class NetworkManager {
 						if (this.GameRoom.state.leftPlayer === key) {
 							GameManager.inst.game.setLeftPlayerScore(value)
 						} else if (this.GameRoom.state.rightPlayer === key) {
-							GameManager.inst.game.setLeftPlayerScore(value)
+							GameManager.inst.game.setRightPlayerScore(value)
 						}
 					}
 				})

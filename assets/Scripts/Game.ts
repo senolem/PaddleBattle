@@ -105,30 +105,51 @@ export class Game extends Component {
 	}
 
 	setBackground(background: SpriteFrame) {
-		this.background.spriteFrame = background
+		if (background != undefined) {
+			this.background.spriteFrame = background
+		}
 	}
 
 	setLeftPlayer(avatar: SpriteFrame, username: string) {
-		this.leftPlayerAvatar.spriteFrame = avatar
-		this.leftPlayerUsername.string = username
+		if (avatar != undefined) {
+			this.leftPlayerAvatar.spriteFrame = avatar
+		}
+
+		if (username != undefined) {
+			this.leftPlayerUsername.string = username
+		}
 	}
 
 	setRightPlayer(avatar: SpriteFrame, username: string) {
-		this.rightPlayerAvatar.spriteFrame = avatar
-		this.rightPlayerUsername.string = username
+		if (avatar != undefined) {
+			this.rightPlayerAvatar.spriteFrame = avatar
+		}
+
+		if(username != undefined) {
+			this.rightPlayerUsername.string = username
+		}
 	}
 
 	setLeftPlayerScore(leftPlayerScore: number) {
-		this.leftPlayerScore.string = String(leftPlayerScore)
+		if (leftPlayerScore != undefined) {
+			this.leftPlayerScore.string = String(leftPlayerScore)
+		}
 	}
 
 	setRightPlayerScore(rightPlayerScore: number) {
-		this.rightPlayerScore.string = String(rightPlayerScore)
+		if (rightPlayerScore) {
+			this.rightPlayerScore.string = String(rightPlayerScore)
+		}
 	}
 
 	setScores(leftPlayerScore: number, rightPlayerScore: number) {
-		this.leftPlayerScore.string = String(leftPlayerScore)
-		this.rightPlayerScore.string = String(rightPlayerScore)
+		if (leftPlayerScore != undefined) {
+			this.leftPlayerScore.string = String(leftPlayerScore)
+		}
+
+		if (rightPlayerScore != undefined) {
+			this.rightPlayerScore.string = String(rightPlayerScore)
+		}
 	}
 
 	showHUD() {
