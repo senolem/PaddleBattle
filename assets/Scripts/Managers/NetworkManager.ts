@@ -141,6 +141,13 @@ export class NetworkManager {
 				}
 			})
 
+			this.GameRoom.onMessage('loadMenu', () => {
+				director.loadScene('Menu', () => {
+					UIManager.inst.loadingScreen.hide()
+					UIManager.inst.switchUIState(UIState.RoomMenu)
+				})
+			})
+
 			this.GameRoom.onMessage('loadGame', () => {
 				UIManager.inst.loadingScreen.show()
 				director.loadScene('Game', () => {
@@ -166,12 +173,22 @@ export class NetworkManager {
 					UIManager.inst.loadingScreen.setLoadingInfo('Instancing room')
 					this.GameRoom.send('clientReady')
 					UIManager.inst.loadingScreen.setLoadingInfo('Waiting for other players')
+
+					this.GameRoom.state.ball.position.onChange(() => {
+						if (GameManager.inst.game) {
+							GameManager.inst.game.moveBall(this.GameRoom.state.ball.position)
+						}
+					})
 				})
 			})
 
 			this.GameRoom.onMessage('startGame', () => {
 				UIManager.inst.loadingScreen.hide()
 				GameManager.inst.game.showHUD()
+			})
+
+			this.LobbyRoom.onMessage('endGame', (error: string) => {
+				//show end game notfication
 			})
 
 			this.GameRoom.state.listen('countdownStarted', (value) => {
@@ -190,12 +207,6 @@ export class NetworkManager {
 				UIManager.inst.mapsScrollView.setSelectedMap(value)
 			})
 
-			this.GameRoom.state.ballPosition.onChange(() => {
-				if (GameManager.inst.game) {
-					GameManager.inst.game.moveBall(this.GameRoom.state.ballPosition)
-				}
-			})
-
 			this.GameRoom.state.players.onAdd((player, key) => {
 				UIManager.inst.playersScrollView.addPlayer(player.id, player.username, player.avatarUrl, player.ready)
 
@@ -203,7 +214,7 @@ export class NetworkManager {
 					UIManager.inst.playersScrollView.updatePlayer(player.id, value)
 				})
 
-				player.position.listen('y', (value) => {
+				player.paddle.position.listen('y', (value) => {
 					if (GameManager.inst.game) {
 						if (this.GameRoom.state.leftPlayer === key) {
 							GameManager.inst.game.moveLeftPlayer(value)
