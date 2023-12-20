@@ -1,4 +1,4 @@
-import { _decorator, Component, Graphics, Material, Node, Sprite, Vec2 } from 'cc'
+import { _decorator, Component, Graphics, lerp, Material, Node, Sprite, Vec2 } from 'cc'
 const { ccclass, property } = _decorator
 
 @ccclass('ScrollingParallax')
@@ -11,17 +11,17 @@ export class ScrollingParallax extends Component {
 	private clouds4Node: Node
 	private clouds5Node: Node
 
-	private sky: Material
-	private clouds1: Material
-	private clouds2: Material
-	private mountains: Material
-	private clouds3: Material
-	private clouds4: Material
-	private clouds5: Material
-	private graphics: Material
+	private skyMaterial: Material
+	private clouds1Material: Material
+	private clouds2Material: Material
+	private mountainsMaterial: Material
+	private clouds3Material: Material
+	private clouds4Material: Material
+	private clouds5Material: Material
+	private graphicsMaterial: Material
 
 	private skySpeed: number = 0
-	private clouds1Speed: number = 0.0125
+	private clouds1Speed: number = 0.0075
 	private clouds2Speed: number = 0.0155
 	private mountainsSpeed: number = 0.0205
 	private clouds3Speed: number = 0.025
@@ -55,27 +55,27 @@ export class ScrollingParallax extends Component {
 		this.clouds4Node = this.node.getChildByName('clouds4')
 		this.clouds5Node = this.node.getChildByName('clouds5')
 
-		this.sky = this.skyNode.getComponent(Sprite).material
-		this.clouds1 = this.clouds1Node.getComponent(Sprite).material
-		this.clouds2 = this.clouds2Node.getComponent(Sprite).material
-		this.mountains = this.mountainsNode.getComponent(Sprite).material
-		this.clouds3 = this.clouds3Node.getComponent(Sprite).material
-		this.clouds4 = this.clouds4Node.getComponent(Sprite).material
-		this.clouds5 = this.clouds5Node.getComponent(Sprite).material
+		this.skyMaterial = this.skyNode.getComponent(Sprite).material
+		this.clouds1Material = this.clouds1Node.getComponent(Sprite).material
+		this.clouds2Material = this.clouds2Node.getComponent(Sprite).material
+		this.mountainsMaterial = this.mountainsNode.getComponent(Sprite).material
+		this.clouds3Material = this.clouds3Node.getComponent(Sprite).material
+		this.clouds4Material = this.clouds4Node.getComponent(Sprite).material
+		this.clouds5Material = this.clouds5Node.getComponent(Sprite).material
 	}
 
 	protected update(dt: number): void {
-		this.updateOffset(this.sky, this.skySpeed, this.skyOffset, dt)
-		this.updateOffset(this.clouds1, this.clouds1Speed, this.clouds1Offset, dt)
-		this.updateOffset(this.clouds2, this.clouds2Speed, this.clouds2Offset, dt)
-		this.updateOffset(this.mountains, this.mountainsSpeed, this.mountainsOffset, dt)
-		this.updateOffset(this.clouds3, this.clouds3Speed, this.clouds3Offset, dt)
-		this.updateOffset(this.clouds4, this.clouds4Speed, this.clouds4Offset, dt)
-		this.updateOffset(this.clouds5, this.clouds5Speed, this.clouds5Offset, dt)
+		this.updateOffset(this.skyMaterial, this.skySpeed, this.skyOffset, dt)
+		this.updateOffset(this.clouds1Material, this.clouds1Speed, this.clouds1Offset, dt)
+		this.updateOffset(this.clouds2Material, this.clouds2Speed, this.clouds2Offset, dt)
+		this.updateOffset(this.mountainsMaterial, this.mountainsSpeed, this.mountainsOffset, dt)
+		this.updateOffset(this.clouds3Material, this.clouds3Speed, this.clouds3Offset, dt)
+		this.updateOffset(this.clouds4Material, this.clouds4Speed, this.clouds4Offset, dt)
+		this.updateOffset(this.clouds5Material, this.clouds5Speed, this.clouds5Offset, dt)
 	}
 
 	updateOffset(material: Material, speed: number, offset: Vec2, dt: number) {
-		offset.x += dt * speed
+		offset.x += dt * speed;
 		if (offset.x >= 1.00) {
 			offset.x = 0
 		}

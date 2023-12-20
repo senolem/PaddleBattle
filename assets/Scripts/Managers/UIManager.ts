@@ -1,4 +1,4 @@
-import { _decorator, Node, View, ResolutionPolicy, director, Canvas, Button, instantiate, resources, Prefab, Texture2D, ImageAsset, find, SpriteFrame, Label } from 'cc'
+import { _decorator, Node, View, ResolutionPolicy, director, Canvas, Button, instantiate, resources, Prefab, Texture2D, ImageAsset, find, SpriteFrame, Label, Camera } from 'cc'
 const { ccclass, property } = _decorator
 import { gameStore, reaction } from 'db://assets/Scripts/Store'
 import { UIState } from 'db://assets/Scripts/Enums/UIState'
@@ -23,8 +23,9 @@ export class UIManager {
 		return this._inst
 	}
 
-	private canvas: Canvas
 	public node!: Node
+	public canvas: Canvas
+	public background: Node
 	public menu: Node
 	public playMenu: Node
 	public settingsMenu: Node
@@ -37,7 +38,7 @@ export class UIManager {
 	public defaultAvatar: SpriteFrame
 	public countdownNode: Node
 	public countdownValueNode: Node
-	public countdownValue: Label
+	public countdownValueLabel: Label
 	public mapsScrollViewNode: Node
 	public mapsScrollView: MapsScrollView
 	public playersScrollViewNode: Node
@@ -72,6 +73,10 @@ export class UIManager {
 				this.controlsSettingsMenu.active = false
 				this.roomMenu.active = false
 				this.matchmakingMenu.active = false
+
+				if (value != UIState.None && !this.background.active) {
+					this.background.active = true
+				}
 
 				switch(value) {
 					case UIState.Menu:
@@ -115,6 +120,11 @@ export class UIManager {
 						this.matchmakingMenu.active = true
 					}
 					break
+
+					case UIState.None:
+					{
+						this.background.active = false
+					}
 				}
 			}
 		)
@@ -185,6 +195,7 @@ export class UIManager {
 			case UIState.None:
 			{
 				GameManager.inst.store.setUIState(UIState.None)
+				
 			}
 			break
 			
@@ -214,6 +225,9 @@ export class UIManager {
 
 	setCanvas(canvas: Canvas) {
 		this.canvas = canvas
+		GameManager.inst.cameraNode = canvas.node.getChildByName('Camera')
+		GameManager.inst.camera = GameManager.inst.cameraNode.getComponent(Camera)
+		this.background = canvas.node.getChildByName('Background')
 		this.menu = canvas.node.getChildByName('Menu')
 		this.playMenu = canvas.node.getChildByName('PlayMenu')
 		this.roomMenu = canvas.node.getChildByName('RoomMenu')
@@ -224,7 +238,7 @@ export class UIManager {
 		this.notifications = canvas.node.getChildByName('Notifications')
 		this.countdownNode = this.roomMenu.getChildByName('CountdownLayout')
 		this.countdownValueNode = find('CountdownValue', this.countdownNode)
-		this.countdownValue = this.countdownValueNode.getComponent(Label)
+		this.countdownValueLabel = this.countdownValueNode.getComponent(Label)
 		this.mapsScrollViewNode = find('RoomLayout/RoomLayout/MapsScrollView', this.roomMenu)
 		this.mapsScrollView = this.mapsScrollViewNode.getComponent(MapsScrollView)
 		this.playersScrollViewNode = find('RoomLayout/RoomPlayersLayout/PlayersScrollView', this.roomMenu)
@@ -269,7 +283,7 @@ export class UIManager {
 	}
 
 	updateCountdown(countdown: number) {
-		this.countdownValue.string = String(countdown)
+		this.countdownValueLabel.string = String(countdown)
 	}
 }
 

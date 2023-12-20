@@ -1,7 +1,8 @@
-import { _decorator, Node, director, Texture2D, SpriteFrame, AudioClip } from 'cc'
+import { _decorator, Node, director, Texture2D, SpriteFrame, AudioClip, Camera } from 'cc'
 import { GameStateStore } from 'db://assets/Scripts/Store'
 import { gameStore, reaction } from 'db://assets/Scripts/Store'
 import { GameMap } from 'db://assets/Scripts/Components/GameMap'
+import { Game } from 'db://assets/Scripts/Game'
 const { ccclass, property } = _decorator
 
 @ccclass('GameManager')
@@ -20,6 +21,10 @@ export class GameManager {
 	public thumbnailCache: Map<string, SpriteFrame> = new Map<string, SpriteFrame>()
 	public backgroundCache: Map<string, SpriteFrame> = new Map<string, SpriteFrame>()
 	public musicCache: Map<string, AudioClip> = new Map<string, AudioClip>()
+	public avatarCache: Map<string, SpriteFrame> = new Map<string, SpriteFrame>()
+	public game: Game
+	public cameraNode: Node
+	public camera: Camera
 
 	constructor() {
 		// Create a new GameManager node and add it to the scene

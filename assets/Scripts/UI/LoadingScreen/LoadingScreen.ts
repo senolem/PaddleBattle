@@ -7,23 +7,23 @@ const { ccclass, property } = _decorator
 export class LoadingScreen extends Component {
     private background: Sprite
 	private thumbnailNode: Node
-	private thumbnail: Sprite
+	private thumbnailSprite: Sprite
 	private displayNameNode: Node
-	private displayName: Label
+	private displayNameLabel: Label
 	private loadingInfoNode: Node
-	private loadingInfo: Label
+	private loadingInfoLabel: Label
 	private animation: AnimationComponent
-	private spinner: Node
+	private spinnerNode: Node
 
 	protected onLoad(): void {
 		this.background = this.node.getComponent(Sprite)
 		this.thumbnailNode = find('LoadingLayout/MapLayout/Thumbnail', this.node)
-		this.thumbnail = this.thumbnailNode.getComponent(Sprite)
+		this.thumbnailSprite = this.thumbnailNode.getComponent(Sprite)
 		this.displayNameNode = find('LoadingLayout/MapLayout/DisplayName', this.node)
-		this.displayName = this.displayNameNode.getComponent(Label)
+		this.displayNameLabel = this.displayNameNode.getComponent(Label)
 		this.loadingInfoNode = find('LoadingLayout/LoadingLayout/TextLayout/LoadingInfo', this.node)
-		this.loadingInfo = this.loadingInfoNode.getComponent(Label)
-		this.spinner = find('LoadingLayout/LoadingLayout/SpinnerLayout/Spinner', this.node)
+		this.loadingInfoLabel = this.loadingInfoNode.getComponent(Label)
+		this.spinnerNode = find('LoadingLayout/LoadingLayout/SpinnerLayout/Spinner', this.node)
 		this.animation = this.node.getComponent(AnimationComponent)
 	}
 
@@ -32,7 +32,7 @@ export class LoadingScreen extends Component {
 	}
 
 	protected update(dt: number): void {
-		this.spinner.angle += 5
+		this.spinnerNode.angle += 5
 	}
 
 	show(): void {
@@ -42,12 +42,12 @@ export class LoadingScreen extends Component {
 		if (selectedMap > -1) {
 			const map = GameManager.inst.maps.get(selectedMap)
 			if (map) {
-				this.displayName.string = map.displayName
+				this.displayNameLabel.string = map.displayName
 				if (map.background) {
 					this.background.spriteFrame = map.background
 				}
 				if (map.thumbnail) {
-					this.thumbnail.spriteFrame = map.thumbnail
+					this.thumbnailSprite.spriteFrame = map.thumbnail
 				}
 			}
 		}
@@ -59,6 +59,6 @@ export class LoadingScreen extends Component {
 	}
 
 	setLoadingInfo(info: string) {
-		this.loadingInfo.string = info
+		this.loadingInfoLabel.string = info
 	}
 }

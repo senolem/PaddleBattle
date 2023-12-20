@@ -4,6 +4,10 @@
     {
       "name": "UI",
       "value": 524288
+    },
+    {
+      "name": "GAME",
+      "value": 262144
     }
   ],
   "custom_joint_texture_layouts": [],

@@ -5,13 +5,13 @@ const { ccclass, property } = _decorator
 @ccclass('MatchmakingMenu')
 export class MatchmakingMenu extends Component {
 	private avatarNode: Node
-	private avatar: Sprite
+	private avatarSprite: Sprite
 	private messageNode: Node
 	private message: Label
 
 	protected onLoad(): void {
 		this.avatarNode = find('MatchmakingLayout/Avatar/AvatarSprite', this.node)
-		this.avatar = this.avatarNode.getComponent(Sprite)
+		this.avatarSprite = this.avatarNode.getComponent(Sprite)
     	this.messageNode = find('MatchmakingLayout/TitleLayout/Message', this.node)
     	this.message = this.messageNode.getComponent(Label)
 	}

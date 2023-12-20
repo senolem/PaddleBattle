@@ -422,13 +422,13 @@
       "b": 255,
       "a": 255
     },
-    "_string": "",
+    "_string": "fddfdfdfdfdfdffdfddfdffddfdfdfdfdffddddddddddddddddddddddddddddddd",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 28,
     "_fontSize": 28,
     "_fontFamily": "Arial",
-    "_lineHeight": 28,
+    "_lineHeight": 56,
     "_overflow": 2,
     "_enableWrapText": true,
     "_font": {

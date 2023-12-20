@@ -1049,7 +1049,7 @@
     "_originalWidth": 100,
     "_originalHeight": 100,
     "_alignMode": 2,
-    "_lockFlags": 0,
+    "_lockFlags": 45,
     "_id": "baRHV3srNBLLSS0Pf645RG"
   },
   {
@@ -19090,7 +19090,7 @@
     "_isAbsVerticalCenter": true,
     "_originalWidth": 0,
     "_originalHeight": 0,
-    "_alignMode": 2,
+    "_alignMode": 1,
     "_lockFlags": 33,
     "_id": "23oKN7gcpAZ4BXp/aY27cU"
   },
@@ -19160,7 +19160,7 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 108.055,
+      "x": 113.47,
       "y": -20,
       "z": 0
     },
@@ -19199,7 +19199,7 @@
     "__prefab": null,
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 133.89,
+      "width": 123.06,
       "height": 20
     },
     "_anchorPoint": {
@@ -19235,7 +19235,7 @@
     "_isAbsVerticalCenter": true,
     "_originalWidth": 0,
     "_originalHeight": 0,
-    "_alignMode": 2,
+    "_alignMode": 1,
     "_lockFlags": 36,
     "_id": "31yrJ50+FMK4RFS4mewPDn"
   },
@@ -19260,7 +19260,7 @@
       "a": 255
     },
     "_string": "Loading Assets",
-    "_horizontalAlign": 1,
+    "_horizontalAlign": 2,
     "_verticalAlign": 1,
     "_actualFontSize": 20,
     "_fontSize": 20,
@@ -20039,7 +20039,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "UICamera",
+    "_name": "Camera",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -20096,7 +20096,7 @@
     "_priority": 1073741824,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 445.3801169590643,
+    "_orthoHeight": 852.2365038560412,
     "_near": 1,
     "_far": 2000,
     "_color": {
@@ -20120,10 +20120,10 @@
     "_shutter": 7,
     "_iso": 0,
     "_screenScale": 1,
-    "_visibility": 524288,
+    "_visibility": 786432,
     "_targetTexture": null,
     "_postProcess": null,
-    "_usePostProcess": false,
+    "_usePostProcess": true,
     "_cameraType": -1,
     "_trackingType": 0,
     "_id": "d8wiPmhG5OlK3Tj1FgbvaA"
@@ -20323,7 +20323,7 @@
     },
     "_diffuseMapHDR": null,
     "_diffuseMapLDR": null,
-    "_enabled": true,
+    "_enabled": false,
     "_useHDR": true,
     "_editableMaterial": null,
     "_reflectionHDR": null,

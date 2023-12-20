@@ -51,7 +51,7 @@ export class MapsScrollView extends Component {
 			})
 		}
 
-		const cachedBackground = GameManager.inst.thumbnailCache.get(map.backgroundUrl)
+		const cachedBackground = GameManager.inst.backgroundCache.get(map.backgroundUrl)
 		if (cachedBackground) {
 			console.log(`Using cached background: ${map.thumbnailUrl}`)
 			newMap.background = cachedBackground

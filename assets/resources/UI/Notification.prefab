@@ -286,7 +286,7 @@
     "_actualFontSize": 28,
     "_fontSize": 28,
     "_fontFamily": "Arial",
-    "_lineHeight": 28,
+    "_lineHeight": 56,
     "_overflow": 2,
     "_enableWrapText": true,
     "_font": {

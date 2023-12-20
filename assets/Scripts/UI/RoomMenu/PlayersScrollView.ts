@@ -35,6 +35,7 @@ export class PlayersScrollView extends Component {
 				avatarTexture.image = imageAsset;
 				const avatarSpriteFrame = new SpriteFrame();
 				avatarSpriteFrame.texture = avatarTexture
+				GameManager.inst.avatarCache.set(avatarUrl, avatarSpriteFrame)
 
 				playerItem.init(username, avatarSpriteFrame, isReady)
 			}

@@ -1,6 +1,6 @@
 import { _decorator, Component, Node, Button } from 'cc'
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
-import { NetworkManager } from '../../Managers/NetworkManager'
+import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager'
 const { ccclass, property } = _decorator
 
 @ccclass('CreateRoomButton')
