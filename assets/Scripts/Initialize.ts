@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, director, Canvas, view } from 'cc'
+import { _decorator, Component, Node, director, Canvas, view, Layers } from 'cc'
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
 import { UIManager } from 'db://assets/Scripts/Managers/UIManager'
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
@@ -22,7 +22,9 @@ export class Initialize extends Component {
 		if (NetworkManager.inst) {
 			console.log('NetworkManager initialized')
 		}
-
+		
+		Layers.addLayer('GAME', 18)
+		GameManager.inst.loadResources()
 		AudioManager.inst.loadResources()
 		UIManager.inst.loadResources()
 		director.loadScene("Menu", () => {

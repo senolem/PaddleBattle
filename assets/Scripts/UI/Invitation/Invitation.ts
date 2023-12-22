@@ -60,15 +60,15 @@ export class Invitation extends Component {
 	protected onEnable(): void {
 		this.acceptNode.on(Button.EventType.CLICK, this.acceptClickCallback)
 		this.denyNode.on(Button.EventType.CLICK, this.denyClickCallback)
-		this.node.on(Node.EventType.MOUSE_ENTER, this.acceptHoverCallback)
-		this.node.on(Node.EventType.MOUSE_ENTER, this.denyHoverCallback)
+		this.acceptNode.on(Node.EventType.MOUSE_ENTER, this.acceptHoverCallback)
+		this.denyNode.on(Node.EventType.MOUSE_ENTER, this.denyHoverCallback)
 	}
 
 	protected onDisable(): void {
-		this.node.off(Button.EventType.CLICK, this.acceptClickCallback)
-		this.node.off(Button.EventType.CLICK, this.denyClickCallback)
-		this.node.off(Node.EventType.MOUSE_ENTER, this.acceptHoverCallback)
-		this.node.off(Node.EventType.MOUSE_ENTER, this.denyHoverCallback)
+		this.acceptNode.off(Button.EventType.CLICK, this.acceptClickCallback)
+		this.denyNode.off(Button.EventType.CLICK, this.denyClickCallback)
+		this.acceptNode.off(Node.EventType.MOUSE_ENTER, this.acceptHoverCallback)
+		this.denyNode.off(Node.EventType.MOUSE_ENTER, this.denyHoverCallback)
 	}
 
     init(id: string, username: string, avatarUrl: string): void {
@@ -89,6 +89,7 @@ export class Invitation extends Component {
         })
 
         this.node.active = true
+		AudioManager.inst.playOneShotUI('invitation')
     }
 }
 

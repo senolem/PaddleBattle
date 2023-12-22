@@ -1,40 +1,47 @@
-import { _decorator, Canvas, Component, EventKeyboard, find, Input, input, KeyCode, Label, Node, Sprite, SpriteFrame, Vec3 } from 'cc';
+import { _decorator, Canvas, Component, EventKeyboard, find, game, Input, input, KeyCode, Label, Node, resources, Sprite, SpriteFrame, UITransform, Vec3 } from 'cc';
+import Colyseus from 'db://colyseus-sdk/colyseus.js'
 import { NetworkManager } from './Managers/NetworkManager';
 import { PaddleState } from './Enums/PaddleState';
+import { GameManager } from './Managers/GameManager';
+import { ShapeType } from './Enums/ShapeType';
+import { BodyType } from './Enums/BodyType';
+import { ObjectType } from './Enums/ObjectType';
+import { WorldObject } from './Components/WorldObject';
 const { ccclass, property } = _decorator;
 
 @ccclass('Game')
 export class Game extends Component {
+	// Game canvas, background and HUD
 	private canvas: Canvas
 	private backgroundNode: Node
 	private background: Sprite
 	private hud: Node
 
+	// Left Player UI
 	private leftPlayerAvatarNode: Node
 	private leftPlayerAvatar: Sprite
 	private leftPlayerUsernameNode: Node
 	private leftPlayerUsername: Label
 	private leftPlayerScoreNode: Node
-	private leftPlayerPaddleNode: Node
-
 	private leftPlayerScore: Label
+
+	// Right Player UI
 	private rightPlayerAvatarNode: Node
 	private rightPlayerAvatar: Sprite
 	private rightPlayerUsernameNode: Node
 	private rightPlayerUsername: Label
 	private rightPlayerScoreNode: Node
 	private rightPlayerScore: Label
-	private rightPlayerPaddleNode: Node
 
-	private ballNode: Node
-	private topWallNode: Node
-	private topWallSprite: Sprite
-	private bottomWallNode: Node
-	private bottomWallSprite: Sprite
-	private leftWallNode: Node
-	private leftWallSprite: Sprite
-	private rightWallNode: Node
-	private rightWallSprite: Sprite
+	// Objects
+	public topWall: WorldObject
+	public bottomWall: WorldObject
+	public leftWall: WorldObject
+	public rightWall: WorldObject
+	public leftPaddle: WorldObject
+	public rightPaddle: WorldObject
+	public ball: WorldObject
+	public objects: Map<string, WorldObject> = new Map<string, WorldObject>()
 
 	protected onLoad(): void {
 		this.canvas = this.node.getComponent(Canvas)
@@ -49,8 +56,6 @@ export class Game extends Component {
 		this.leftPlayerUsername = this.leftPlayerUsernameNode.getComponent(Label)
 		this.leftPlayerScoreNode = find('GameHUD/ScoreLayout/ScoreFrameLayout/ScoreValueLayout/ScoreLeft', this.node)
 		this.leftPlayerScore = this.leftPlayerScoreNode.getComponent(Label)
-		this.leftPlayerPaddleNode = find('LeftPaddle', this.node)
-		this.rightPlayerPaddleNode = find('RightPaddle', this.node)
 
 		this.rightPlayerAvatarNode = find('GameHUD/ScoreLayout/ScoreFrameLayout/RightPlayerLayout/Avatar', this.node)
 		this.rightPlayerAvatar = this.rightPlayerAvatarNode.getComponent(Sprite)
@@ -58,16 +63,6 @@ export class Game extends Component {
 		this.rightPlayerUsername = this.rightPlayerUsernameNode.getComponent(Label)
 		this.rightPlayerScoreNode = find('GameHUD/ScoreLayout/ScoreFrameLayout/ScoreValueLayout/ScoreRight', this.node)
 		this.rightPlayerScore = this.rightPlayerScoreNode.getComponent(Label)
-
-		this.ballNode = find('Ball', this.node)
-		this.topWallNode = find('TopWall', this.node)
-		this.topWallSprite = this.topWallNode.getComponent(Sprite)
-		this.bottomWallNode = find('BottomWall', this.node)
-		this.topWallSprite = this.bottomWallNode.getComponent(Sprite)
-		this.leftWallNode = find('LeftWall', this.node)
-		this.topWallSprite = this.leftWallNode.getComponent(Sprite)
-		this.rightWallNode = find('RightWall', this.node)
-		this.topWallSprite = this.rightWallNode.getComponent(Sprite)
 	}
 
 	protected onEnable(): void {
@@ -78,6 +73,50 @@ export class Game extends Component {
 	protected onDisable(): void {
 		input.off(Input.EventType.KEY_DOWN, this.onKeyDown, this)
 		input.off(Input.EventType.KEY_UP, this.onKeyUp, this)
+	}
+
+	instantiateObject(object, key: string): WorldObject{
+		const worldObject: WorldObject = new WorldObject(object.id, this.node, object.position, object.size, object.shapeType, object.bodyType, object.texture)
+
+		switch (object.objectType) {
+			case ObjectType.TopWall:
+				this.topWall = worldObject
+				break
+			
+			case ObjectType.BottomWall:
+				this.bottomWall = worldObject
+				break
+
+			case ObjectType.LeftWall:
+				this.leftWall = worldObject
+				break
+
+			case ObjectType.RightWall:
+				this.rightWall = worldObject
+				break
+
+			case ObjectType.LeftPaddle:
+				this.leftPaddle = worldObject
+				break
+
+			case ObjectType.RightPaddle:
+				this.rightPaddle = worldObject
+				break
+				
+			case ObjectType.Ball:
+				this.ball = worldObject
+				break
+		}
+
+		this.objects.set(object.id, worldObject)
+		return worldObject
+	}
+
+	destroyObject(key: string) {
+		const gameObject = this.objects.get(key)
+		if (gameObject) {
+			gameObject.destroy()
+		}
 	}
 
 	onKeyDown(event: EventKeyboard) {
@@ -158,18 +197,6 @@ export class Game extends Component {
 
 	hideHUD() {
 		this.hud.active = false
-	}
-
-	moveLeftPlayer(position: number) {
-		this.leftPlayerPaddleNode.setPosition(this.leftPlayerPaddleNode.position.x, position, 0)
-	}
-
-	moveRightPlayer(position: number) {
-		this.rightPlayerPaddleNode.setPosition(this.rightPlayerPaddleNode.position.x, position, 0)
-	}
-
-	moveBall(position: Vec3) {
-		this.ballNode.position = position
 	}
 }
 

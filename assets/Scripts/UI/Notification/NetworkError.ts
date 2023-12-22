@@ -21,7 +21,7 @@ export class NetworkError extends Component {
         // Click event
 		this.clickCallback = (event) => {
 			AudioManager.inst.playOneShotUI('button_click')
-			NetworkManager.inst.connect()
+			NetworkManager.inst.reconnect()
             this.node.destroy()
 		}
 
@@ -38,11 +38,12 @@ export class NetworkError extends Component {
 
 	protected onDisable(): void {
 		this.reconnectNode.off(Button.EventType.CLICK, this.clickCallback)
-		this.node.off(Node.EventType.MOUSE_ENTER, this.hoverCallback)
+		this.reconnectNode.off(Node.EventType.MOUSE_ENTER, this.hoverCallback)
 	}
 
 	init(text: string): void {
 		this.textLabel.string = text
+		AudioManager.inst.playOneShotUI('error')
     }
 }
 

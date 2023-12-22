@@ -10,6 +10,7 @@ import { MapsScrollView } from 'db://assets/Scripts/UI/RoomMenu/MapsScrollView'
 import { PlayersScrollView } from 'db://assets/Scripts/UI/RoomMenu/PlayersScrollView'
 import { LoadingScreen } from 'db://assets/Scripts/UI/LoadingScreen/LoadingScreen'
 import { NetworkError } from 'db://assets/Scripts/UI/Notification/NetworkError'
+import { EndGameScreen } from 'db://assets/Scripts/UI/EndGameScreen/EndGameScreen'
 
 const view = View.instance
 
@@ -268,6 +269,13 @@ export class UIManager {
 
 		const networkError = networkErrorNode.getComponent(NetworkError)
 		networkError.init(text)
+	}
+
+	showEndGameScreen() {
+		const endGameScreenNode = instantiate(this.prefabs.get('EndGameScreen'))
+		endGameScreenNode.parent = this.notifications
+		const endGame = endGameScreenNode.getComponent(EndGameScreen)
+		endGame.init()
 	}
 
 	enableCountdown() {

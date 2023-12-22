@@ -1,4 +1,4 @@
-import { _decorator, Node, director, Texture2D, SpriteFrame, AudioClip, Camera } from 'cc'
+import { _decorator, Node, director, Texture2D, SpriteFrame, AudioClip, Camera, resources } from 'cc'
 import { GameStateStore } from 'db://assets/Scripts/Store'
 import { gameStore, reaction } from 'db://assets/Scripts/Store'
 import { GameMap } from 'db://assets/Scripts/Components/GameMap'
@@ -22,6 +22,7 @@ export class GameManager {
 	public backgroundCache: Map<string, SpriteFrame> = new Map<string, SpriteFrame>()
 	public musicCache: Map<string, AudioClip> = new Map<string, AudioClip>()
 	public avatarCache: Map<string, SpriteFrame> = new Map<string, SpriteFrame>()
+	public textureCache: Map<string, SpriteFrame> = new Map<string, SpriteFrame>()
 	public game: Game
 	public cameraNode: Node
 	public camera: Camera
@@ -37,6 +38,16 @@ export class GameManager {
 
 		// Instanting the mobx store
 		this.store = gameStore
+	}
+
+	loadResources() {
+		resources.loadDir("game", function (err, assets) {
+			assets.forEach(function (asset) {
+				if (asset instanceof SpriteFrame) {
+					GameManager.inst.textureCache.set(asset.name, asset)
+				}
+			})
+		})
 	}
 }
 
