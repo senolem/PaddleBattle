@@ -1,6 +1,5 @@
 import { _decorator, Node, View, ResolutionPolicy, director, Canvas, Button, instantiate, resources, Prefab, Texture2D, ImageAsset, find, SpriteFrame, Label, Camera } from 'cc'
 const { ccclass, property } = _decorator
-import { gameStore, reaction } from 'db://assets/Scripts/Store'
 import { UIState } from 'db://assets/Scripts/Enums/UIState'
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
 import { InvitationData } from 'db://assets/Scripts/Components/InvitationData'
@@ -11,6 +10,8 @@ import { PlayersScrollView } from 'db://assets/Scripts/UI/RoomMenu/PlayersScroll
 import { LoadingScreen } from 'db://assets/Scripts/UI/LoadingScreen/LoadingScreen'
 import { NetworkError } from 'db://assets/Scripts/UI/Notification/NetworkError'
 import { EndGameScreen } from 'db://assets/Scripts/UI/EndGameScreen/EndGameScreen'
+import { StatusBox } from 'db://assets/Scripts/UI/Notification/StatusBox'
+import { stat } from 'fs'
 
 const view = View.instance
 
@@ -26,6 +27,7 @@ export class UIManager {
 
 	public node!: Node
 	public canvas: Canvas
+	public UIState: UIState
 	public background: Node
 	public menu: Node
 	public playMenu: Node
@@ -35,6 +37,7 @@ export class UIManager {
 	public roomMenu: Node
 	public matchmakingMenu: Node
 	public notifications: Node
+	public status: Node
 	public prefabs: Map<string, Prefab> = new Map<string, Prefab>()
 	public defaultAvatar: SpriteFrame
 	public countdownNode: Node
@@ -62,73 +65,6 @@ export class UIManager {
 		window.addEventListener('resize', () => {
 			this.makeResponsive()
 		})
-
-		// Watch for UIState changes
-		reaction(
-			() => GameManager.inst.store.uiState,
-			(value: UIState, previousValue: UIState) => {
-				this.menu.active = false
-				this.playMenu.active = false
-				this.settingsMenu.active = false
-				this.audioSettingsMenu.active = false
-				this.controlsSettingsMenu.active = false
-				this.roomMenu.active = false
-				this.matchmakingMenu.active = false
-
-				if (value != UIState.None && !this.background.active) {
-					this.background.active = true
-				}
-
-				switch(value) {
-					case UIState.Menu:
-					{
-						this.menu.active = true
-					}
-					break
-
-					case UIState.PlayMenu:
-					{
-						this.playMenu.active = true
-					}
-					break
-
-					case UIState.SettingsMenu:
-					{
-						this.settingsMenu.active = true
-					}
-					break
-
-					case UIState.AudioSettingsMenu:
-					{
-						this.audioSettingsMenu.active = true
-					}
-					break
-
-					case UIState.ControlsSettingsMenu:
-					{
-						this.controlsSettingsMenu.active = true
-					}
-					break
-
-					case UIState.RoomMenu:
-					{
-						this.roomMenu.active = true
-					}
-					break
-
-					case UIState.MatchmakingMenu:
-					{
-						this.matchmakingMenu.active = true
-					}
-					break
-
-					case UIState.None:
-					{
-						this.background.active = false
-					}
-				}
-			}
-		)
 	}
 
 	loadResources() {
@@ -150,60 +86,72 @@ export class UIManager {
 	}
 
 	switchUIState(state: UIState) {
-		switch(state) {
+		this.UIState = state
+		this.reactUIState(state)
+	}
+
+	// Watch for UIState changes
+	reactUIState(value: UIState) {
+		this.menu.active = false
+		this.playMenu.active = false
+		this.settingsMenu.active = false
+		this.audioSettingsMenu.active = false
+		this.controlsSettingsMenu.active = false
+		this.roomMenu.active = false
+		this.matchmakingMenu.active = false
+
+		if (value != UIState.None && !this.background.active) {
+			this.background.active = true
+		}
+
+		switch(value) {
 			case UIState.Menu:
 			{
-				GameManager.inst.store.setUIState(UIState.Menu)
+				this.menu.active = true
 			}
 			break
 
 			case UIState.PlayMenu:
 			{
-				GameManager.inst.store.setUIState(UIState.PlayMenu)
+				this.playMenu.active = true
 			}
 			break
 
 			case UIState.SettingsMenu:
 			{
-				GameManager.inst.store.setUIState(UIState.SettingsMenu)
+				this.settingsMenu.active = true
 			}
 			break
 
 			case UIState.AudioSettingsMenu:
 			{
-				GameManager.inst.store.setUIState(UIState.AudioSettingsMenu)
+				this.audioSettingsMenu.active = true
 			}
 			break
 
 			case UIState.ControlsSettingsMenu:
 			{
-				GameManager.inst.store.setUIState(UIState.ControlsSettingsMenu)
+				this.controlsSettingsMenu.active = true
 			}
 			break
 
 			case UIState.RoomMenu:
 			{
-				GameManager.inst.store.setUIState(UIState.RoomMenu)
+				this.roomMenu.active = true
 			}
 			break
 
 			case UIState.MatchmakingMenu:
 			{
-				GameManager.inst.store.setUIState(UIState.MatchmakingMenu)
+				this.matchmakingMenu.active = true
 			}
 			break
 
 			case UIState.None:
 			{
-				GameManager.inst.store.setUIState(UIState.None)
-				
+				this.background.active = false
 			}
 			break
-			
-			default:
-			{
-				console.error('Invalid UI State')
-			}
 		}
 	}
 
@@ -237,6 +185,7 @@ export class UIManager {
 		this.controlsSettingsMenu = canvas.node.getChildByName('ControlsSettingsMenu')
 		this.matchmakingMenu = canvas.node.getChildByName('MatchmakingMenu')
 		this.notifications = canvas.node.getChildByName('Notifications')
+		this.status = this.notifications.getChildByName('Status')
 		this.countdownNode = this.roomMenu.getChildByName('CountdownLayout')
 		this.countdownValueNode = find('CountdownValue', this.countdownNode)
 		this.countdownValueLabel = this.countdownValueNode.getComponent(Label)
@@ -264,6 +213,11 @@ export class UIManager {
 	}
 
 	showNetworkError(text: string) {
+		const existingError = this.notifications.getChildByName('NetworkError')
+		if (existingError) {
+			return
+		}
+
 		const networkErrorNode = instantiate(this.prefabs.get('NetworkError'))
 		networkErrorNode.parent = this.notifications
 
@@ -276,6 +230,14 @@ export class UIManager {
 		endGameScreenNode.parent = this.notifications
 		const endGame = endGameScreenNode.getComponent(EndGameScreen)
 		endGame.init()
+	}
+
+	showStatus(title: string, message: string) {
+		const statusBoxNode = instantiate(this.prefabs.get('StatusBox'))
+		statusBoxNode.parent = this.status
+
+		const statusBox = statusBoxNode.getComponent(StatusBox)
+		statusBox.init(title, message)
 	}
 
 	enableCountdown() {

@@ -1,6 +1,6 @@
-import { _decorator, Node, AudioSource, AudioClip, resources, director } from 'cc'
+import { _decorator, Node, AudioSource, AudioClip, resources, director, game, Game, sys } from 'cc'
+import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
 const { ccclass, property } = _decorator
-import { gameStore, reaction } from 'db://assets/Scripts/Store'
 
 @ccclass('AudioManager')
 export class AudioManager {
@@ -18,6 +18,7 @@ export class AudioManager {
 	private _UISource!: AudioSource
 	public UIClips: Map<string, AudioClip> = new Map<string, AudioClip>()
 
+
     constructor() {
 		// Create a new AudioManager node and add it to the scene
 		this.node = new Node()
@@ -32,26 +33,9 @@ export class AudioManager {
 		this._effectsSource = this.node.addComponent(AudioSource)
 		this._UISource = this.node.addComponent(AudioSource)
 
-		reaction(
-			() => gameStore.gameSettings.musicVolume,
-			(value: number, previousValue: number) => {
-				this._musicSource.volume = value
-			}
-		)
-
-		reaction(
-			() => gameStore.gameSettings.effectsVolume,
-			(value: number, previousValue: number) => {
-				this._effectsSource.volume = value
-			}
-		)
-
-		reaction(
-			() => gameStore.gameSettings.UIVolume,
-			(value: number, previousValue: number) => {
-				this._UISource.volume = value
-			}
-		)
+		this._musicSource.volume = this.getMusicVolume
+		this._effectsSource.volume = this.getEffectsVolume
+		this._UISource.volume = this.getUIVolume
 	}
 	
 
@@ -91,7 +75,7 @@ export class AudioManager {
      */
     playOneShotEffects(sound: AudioClip | string) {
         if (sound instanceof AudioClip) {
-            this._effectsSource.playOneShot(sound, gameStore.getEffectsVolume)
+            this._effectsSource.playOneShot(sound, 1)
         }
         else {
             resources.load(sound, (err, clip: AudioClip) => {
@@ -99,7 +83,7 @@ export class AudioManager {
                     console.log(err)
                 }
                 else {
-                    this._effectsSource.playOneShot(clip, gameStore.getEffectsVolume)
+                    this._effectsSource.playOneShot(clip)
                 }
             })
         }
@@ -112,12 +96,12 @@ export class AudioManager {
      */
     playOneShotUI(sound: AudioClip | string) {
         if (sound instanceof AudioClip) {
-            this._effectsSource.playOneShot(sound)
+            this._UISource.playOneShot(sound, 1)
         }
         else {
 			const clip = this.getUIClip(sound)
 			if (clip) {
-				this._effectsSource.playOneShot(clip)
+				this._UISource.playOneShot(clip)
 			} else {
 				console.error(`Unknown AudioClip '${sound}'`)
 			}
@@ -214,20 +198,62 @@ export class AudioManager {
      * Change the Music source volume
      */
     setMusicVolume(volume: number){
-        gameStore.setMusicVolume(volume)
+        sys.localStorage.setItem('musicVolume', volume)
+		this._musicSource.volume = volume
     }
 
 	/**
      * Change the Effects source volume
      */
     setEffectsVolume(volume: number){
-        gameStore.setEffectsVolume(volume)
+		sys.localStorage.setItem('effectsVolume', volume)
+		this._effectsSource.volume = volume
     }
 
 	/**
      * Change the UI source volume
      */
     setUIVolume(volume: number){
-        gameStore.setUIVolume(volume)
+		sys.localStorage.setItem('UIVolume', volume)
+		this._UISource.volume = volume
     }
+
+	/**
+     * Change the Music source volume
+     */
+	public get getMusicVolume() {
+		let volume = sys.localStorage.getItem('musicVolume')
+		if (volume === undefined) {
+			volume = 0.75
+			sys.localStorage.setItem('musicVolume', volume)
+			this._musicSource.volume = volume
+		}
+		return volume
+	}
+
+	/**
+     * Change the Effects source volume
+     */
+    public get getEffectsVolume() {
+		let volume = sys.localStorage.getItem('effectsVolume')
+		if (volume === undefined) {
+			volume = 0.50
+			sys.localStorage.setItem('effectsVolume', volume)
+			this._effectsSource.volume = volume
+		}
+		return volume
+	}
+
+	/**
+     * Change the UI source volume
+     */
+    public get getUIVolume() {
+		let volume = sys.localStorage.getItem('UIVolume')
+		if (volume === undefined) {
+			volume = 0.60
+			sys.localStorage.setItem('UIVolume', volume)
+			this._musicSource.volume = volume
+		}
+		return volume
+	}
 }

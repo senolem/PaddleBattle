@@ -4,6 +4,7 @@ import { MapItem } from 'db://assets/Scripts/UI/RoomMenu/MapItem'
 import { MapData } from 'db://assets/Scripts/Components/MapData'
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
 import { GameMap } from 'db://assets/Scripts/Components/GameMap'
+import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager'
 const { ccclass, property } = _decorator
 
 @ccclass('MapsScrollView')
@@ -29,11 +30,11 @@ export class MapsScrollView extends Component {
 
 		const cachedThumbnail = GameManager.inst.thumbnailCache.get(map.thumbnailUrl)
 		if (cachedThumbnail) {
-			console.log(`Using cached thumbnail: ${map.thumbnailUrl}`)
+			console.debug(`Using cached thumbnail: ${map.thumbnailUrl}`)
 			newMap.thumbnail = cachedThumbnail
 			mapItem.setThumbnail(newMap.thumbnail)
 		} else {
-			assetManager.loadRemote<ImageAsset>(map.thumbnailUrl + '?authorization=' + GameManager.inst.store.getAuthorization, (err, imageAsset) => {
+			assetManager.loadRemote<ImageAsset>(map.thumbnailUrl + '?authorization=' + NetworkManager.inst.getAuthorization, (err, imageAsset) => {
 				if (err) {
 					console.log(`Failed to download thumbnail: ${map.thumbnailUrl} ${err}`)
 				}
@@ -53,10 +54,10 @@ export class MapsScrollView extends Component {
 
 		const cachedBackground = GameManager.inst.backgroundCache.get(map.backgroundUrl)
 		if (cachedBackground) {
-			console.log(`Using cached background: ${map.thumbnailUrl}`)
+			console.debug(`Using cached background: ${map.thumbnailUrl}`)
 			newMap.background = cachedBackground
 		} else {
-			assetManager.loadRemote<ImageAsset>(map.backgroundUrl + '?authorization=' + GameManager.inst.store.getAuthorization, (err, imageAsset) => {
+			assetManager.loadRemote<ImageAsset>(map.backgroundUrl + '?authorization=' + NetworkManager.inst.getAuthorization, (err, imageAsset) => {
 				if (err) {
 					console.log(`Failed to download background: ${map.backgroundUrl} ${err}`)
 				}
@@ -75,10 +76,10 @@ export class MapsScrollView extends Component {
 
 		const cachedMusic = GameManager.inst.musicCache.get(map.musicUrl)
 		if (cachedMusic) {
-			console.log(`Using cached music: ${map.thumbnailUrl}`)
+			console.debug(`Using cached music: ${map.thumbnailUrl}`)
 			newMap.music = cachedMusic
 		} else {
-			assetManager.loadRemote<AudioClip>(map.musicUrl + '?authorization=' + GameManager.inst.store.getAuthorization, (err, audioClip) => {
+			assetManager.loadRemote<AudioClip>(map.musicUrl + '?authorization=' + NetworkManager.inst.getAuthorization, (err, audioClip) => {
 				if (err) {
 					console.log(`Failed to download music: ${map.musicUrl} ${err}`)
 				}

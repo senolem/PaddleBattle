@@ -1,4 +1,4 @@
-import { _decorator, Node, Sprite, SpriteFrame, UITransform, Vec3 } from "cc"
+import { _decorator, MobilityMode, Node, Sprite, SpriteFrame, UITransform, Vec3 } from "cc"
 import { BodyType } from "db://assets/Scripts/Enums/BodyType"
 import { ShapeType } from "db://assets/Scripts/Enums/ShapeType"
 import { ObjectType } from "db://assets/Scripts/Enums/ObjectType"
@@ -15,9 +15,22 @@ export class WorldObject {
 	constructor(id: string, parent: Node, position: Vec3, size: Vec3, shapeType: ShapeType, bodyType: BodyType, texture: string) {
 		this.id = id
 		this.node = new Node()
+		this.node.parent = parent
 		this.node.name = this.id
 		this.node.layer = 1 << 18
-		this.node.parent = parent
+		//switch (bodyType) {
+		//	case BodyType.Static:
+		//		this.node.mobility = MobilityMode.Static
+		//		break
+		//	
+		//	case BodyType.Dynamic:
+		//		this.node.mobility = MobilityMode.Movable
+		//		break
+//
+		//	case BodyType.Kinematic:
+		//		this.node.mobility = MobilityMode.Stationary
+		//		break
+		//}
 		this.transform = this.node.addComponent(UITransform)
 		this.sprite = this.node.addComponent(Sprite)
 

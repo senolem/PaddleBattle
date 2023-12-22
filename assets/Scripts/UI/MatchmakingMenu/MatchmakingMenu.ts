@@ -17,6 +17,6 @@ export class MatchmakingMenu extends Component {
 	}
 
 	protected start(): void {
-		this.message.string = `${String(NetworkManager.inst.getOnlineUsers())} + players online`
+		this.message.string = `${String(NetworkManager.inst.getOnlineUsers)} + players online`
 	}
 }

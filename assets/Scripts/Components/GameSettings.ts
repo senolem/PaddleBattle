@@ -3,7 +3,7 @@ const { ccclass } = _decorator
 
 @ccclass('GameSettings')
 export class GameSettings {
-	musicVolume: number
-	effectsVolume: number
-	UIVolume: number
+	musicVolume: number = 0
+	effectsVolume: number = 0
+	UIVolume: number = 0
 }

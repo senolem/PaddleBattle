@@ -1,8 +1,7 @@
 import { _decorator, Node, director, Texture2D, SpriteFrame, AudioClip, Camera, resources } from 'cc'
-import { GameStateStore } from 'db://assets/Scripts/Store'
-import { gameStore, reaction } from 'db://assets/Scripts/Store'
 import { GameMap } from 'db://assets/Scripts/Components/GameMap'
 import { Game } from 'db://assets/Scripts/Game'
+import { GameSettings } from '../Components/GameSettings'
 const { ccclass, property } = _decorator
 
 @ccclass('GameManager')
@@ -16,7 +15,6 @@ export class GameManager {
     }
 
 	private node!: Node
-    public store!: GameStateStore
 	public maps: Map<number, GameMap> = new Map<number, GameMap>()
 	public thumbnailCache: Map<string, SpriteFrame> = new Map<string, SpriteFrame>()
 	public backgroundCache: Map<string, SpriteFrame> = new Map<string, SpriteFrame>()
@@ -35,9 +33,6 @@ export class GameManager {
 
         // Make it as a persistent node, so it won't be destroyed when scene changes
         director.addPersistRootNode(this.node)
-
-		// Instanting the mobx store
-		this.store = gameStore
 	}
 
 	loadResources() {

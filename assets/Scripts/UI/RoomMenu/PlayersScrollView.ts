@@ -2,6 +2,7 @@ import { _decorator, assetManager, Component, find, ImageAsset, instantiate, Nod
 import { UIManager } from 'db://assets/Scripts/Managers/UIManager';
 import { PlayerItem } from 'db://assets/Scripts/UI/RoomMenu/PlayerItem';
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager';
+import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayersScrollView')
@@ -25,7 +26,7 @@ export class PlayersScrollView extends Component {
 		const playerItem = playerItemNode.getComponent(PlayerItem)
 		this.players.set(id, playerItemNode)
 		playerItemNode.parent = this.contentNode
-		assetManager.loadRemote<ImageAsset>(avatarUrl + '?authorization=' + GameManager.inst.store.getAuthorization, (err, imageAsset) => {
+		assetManager.loadRemote<ImageAsset>(avatarUrl + '?authorization=' + NetworkManager.inst.getAuthorization, (err, imageAsset) => {
 			if (err) {
 				console.log(`Failed to download avatar: ${avatarUrl} ${err}`)
 			}

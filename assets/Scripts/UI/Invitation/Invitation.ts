@@ -74,11 +74,11 @@ export class Invitation extends Component {
     init(id: string, username: string, avatarUrl: string): void {
         this.id = id
         this.username.string = username
-		assetManager.loadRemote<ImageAsset>(avatarUrl + '?authorization=' + GameManager.inst.store.getAuthorization, (err, imageAsset) => {
+		assetManager.loadRemote<ImageAsset>(avatarUrl + '?authorization=' + NetworkManager.inst.getAuthorization, (err, imageAsset) => {
 			if (err) {
-				console.log(`Failed to download avatar: ${avatarUrl} ${err}`)
+				console.error(`Failed to download avatar: ${avatarUrl} ${err}`)
 			} else if (imageAsset) {
-				console.log(`Downloaded avatar: ${avatarUrl}`)
+				console.debug(`Downloaded avatar: ${avatarUrl}`)
 				const avatarTexture = new Texture2D()
 				avatarTexture.image = imageAsset
 				const avatarSpriteFrame = new SpriteFrame()

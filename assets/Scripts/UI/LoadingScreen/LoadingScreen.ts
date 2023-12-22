@@ -38,7 +38,7 @@ export class LoadingScreen extends Component {
 	show(): void {
 		this.enabled = true
 		this.node.active = true
-		const selectedMap = NetworkManager.inst.getSelectedMap()
+		const selectedMap = NetworkManager.inst.getSelectedMap
 		if (selectedMap > -1) {
 			const map = GameManager.inst.maps.get(selectedMap)
 			if (map) {

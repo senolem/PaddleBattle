@@ -32,6 +32,7 @@ export class Initialize extends Component {
 			director.addPersistRootNode(canvasNode)
 			UIManager.inst.setCanvas(canvasNode.getComponent(Canvas))
 			UIManager.inst.switchUIState(UIState.Menu)
+			NetworkManager.inst.connect()
 		})
 	}
 }

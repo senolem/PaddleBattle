@@ -26,6 +26,7 @@ export class NetworkManager {
 	private port: number = 3000
 	private useSSL: boolean = false
 	private accessToken: string = "UNITY"
+	private authorization: string
 	private client!: Colyseus.Client
 	private LobbyRoom: Colyseus.Room
 	private GameRoom: Colyseus.Room
@@ -42,9 +43,6 @@ export class NetworkManager {
 		// Instantiate Colyseus Client
 		// connects into (ws|wss)://hostname[:port]
 		this.client = new Colyseus.Client(`${this.useSSL ? "wss" : "ws"}://${this.hostname}${([443, 80].includes(this.port) || this.useSSL) ? "" : `:${this.port}`}`)
-
-		// Connect into the room
-		this.connect()
 	}
 
 	async connect() {
@@ -52,11 +50,8 @@ export class NetworkManager {
 			try {
 				this.LobbyRoom = await this.client.join("LobbyRoom", { accessToken: this.accessToken })
 
-				console.log(`Successfully joined LobbyRoom (${this.LobbyRoom.id})`)
-				console.log(`Current sessionId : ${this.LobbyRoom.sessionId}`)
-
 				this.LobbyRoom.onLeave((code) => {
-					console.log("onLeave: ", code)
+					console.debug("onLeave: ", code)
 					if (code != 1000) {
 						UIManager.inst.showNetworkError('Connection to the server lost. Do you want to try to reconnect?')
 					}
@@ -68,7 +63,7 @@ export class NetworkManager {
 				})
 
 				this.LobbyRoom.onMessage('setAuthorization', (authorization: string) => {
-					GameManager.inst.store.setAuthorization(authorization)
+					this.authorization = authorization
 				})
 
 				this.LobbyRoom.onMessage('joinRoom', async (reservation: any) => {
@@ -82,12 +77,11 @@ export class NetworkManager {
 				})
 
 				this.LobbyRoom.onMessage('leaveRoom', () => {
-					this.GameRoom = null
 					UIManager.inst.playersScrollView.players.forEach((value, key) => {
 						value.destroy()
 					})
 					UIManager.inst.playersScrollView.players.clear()
-					console.log('Left GameRoom')
+					console.debug('Left GameRoom')
 					UIManager.inst.switchUIState(UIState.PlayMenu)
 				})
 
@@ -102,6 +96,10 @@ export class NetworkManager {
 				this.LobbyRoom.onMessage('leaveMatchmaking', () => {
 					UIManager.inst.switchUIState(UIState.PlayMenu)
 				})
+
+				console.debug(`Successfully joined LobbyRoom (${this.LobbyRoom.id})`)
+				console.debug(`Current sessionId : ${this.LobbyRoom.sessionId}`)
+				UIManager.inst.showStatus('You are now connected', 'Successfully joined lobby')
 			} catch (error) {
 				UIManager.inst.showNetworkError('Connection to the server lost. Do you want to try to reconnect?')
 				console.error(error)
@@ -112,9 +110,18 @@ export class NetworkManager {
 	}
 
 	async reconnect() {
-		if (!this.LobbyRoom) {
+		if (this.LobbyRoom) {
+			if (!this.LobbyRoom.connection.isOpen) {
+				await this.connect()
+			}
+		} else {
 			await this.connect()
-		} else if (!this.GameRoom) {
+		}
+		if (this.GameRoom) 
+			if (!this.GameRoom.connection.isOpen) {
+				//await this.connectToGame()
+			// we need reconnectToken
+		} else {
 			//await this.connectToGame()
 			// we need reconnectToken
 		}
@@ -123,7 +130,6 @@ export class NetworkManager {
 	async connectToGame(reservation: any) {
 		try {
 			this.GameRoom = await this.client.consumeSeatReservation(reservation)
-			console.log(`Successfully joined GameRoom (${this.GameRoom.id})`)
 
 			this.GameRoom.onMessage('server_error', (error: string) => {
 				console.error(`[GameRoom] ${error}`)
@@ -210,10 +216,12 @@ export class NetworkManager {
 			this.GameRoom.state.players.onRemove((player, key) => {
 				UIManager.inst.playersScrollView.removePlayer(player.id)
 			})
+
+			console.debug(`Successfully joined GameRoom (${this.GameRoom.id})`)
+			UIManager.inst.showStatus('You are now connected', 'Successfully joined game')
 		} catch (error) {
 			if (this.GameRoom) {
 				this.leaveRoom()
-				this.GameRoom = null
 			}
 			console.error(error)
 		}
@@ -257,7 +265,6 @@ export class NetworkManager {
 			const worldObject = GameManager.inst.game.instantiateObject(object, key)
 
 			object.position.onChange(() => {
-				console.log(`${object.id} - ${object.position.x} ${object.position.y} ${object.position.z}`)
 				worldObject.move(object.position)
 			})
 		})
@@ -268,7 +275,11 @@ export class NetworkManager {
 	}
 
 	createRoom() {
-		this.LobbyRoom.send('createRoom')
+		if (this.LobbyRoom && this.LobbyRoom.connection.isOpen) {
+			this.LobbyRoom.send('createRoom')
+		} else {
+			UIManager.inst.showNetworkError('Connection to the server lost. Do you want to try to reconnect?')
+		}
 	}
 
 	leaveRoom() {
@@ -288,14 +299,18 @@ export class NetworkManager {
 	}
 
 	joinMatchmaking() {
-		this.LobbyRoom.send('joinMatchmaking')
+		if (this.LobbyRoom && this.LobbyRoom.connection.isOpen) {
+			this.LobbyRoom.send('joinMatchmaking')
+		} else {
+			UIManager.inst.showNetworkError('Connection to the server lost. Do you want to try to reconnect?')
+		}
 	}
 
 	leaveMatchmaking() {
 		this.LobbyRoom.send('leaveMatchmaking')
 	}
 
-	getOnlineUsers(): number {
+	public get getOnlineUsers(): number {
 		if (this.LobbyRoom) {
 			return this.LobbyRoom.state.players.size
 		}
@@ -308,7 +323,7 @@ export class NetworkManager {
 		}
 	}
 
-	getSelectedMap(): number {
+	public get getSelectedMap(): number {
 		if (this.GameRoom) {
 			return this.GameRoom.state.selectedMap
 		}
@@ -357,5 +372,9 @@ export class NetworkManager {
 			result
 		}
 		return data
+	}
+
+	public get getAuthorization(): string {
+		return this.authorization	
 	}
 }
