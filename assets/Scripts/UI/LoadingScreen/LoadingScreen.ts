@@ -53,7 +53,7 @@ export class LoadingScreen extends Component {
 		}
 	}
 
-	hide() {
+	hide(): void {
 		this.enabled = false
 		this.node.active = false
 	}

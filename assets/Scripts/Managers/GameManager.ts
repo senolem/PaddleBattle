@@ -1,7 +1,7 @@
 import { _decorator, Node, director, Texture2D, SpriteFrame, AudioClip, Camera, resources } from 'cc'
 import { GameMap } from 'db://assets/Scripts/Components/GameMap'
 import { Game } from 'db://assets/Scripts/Game'
-import { GameSettings } from '../Components/GameSettings'
+import { Keybinds } from 'db://assets/Scripts/Components/Keybinds'
 const { ccclass, property } = _decorator
 
 @ccclass('GameManager')
@@ -24,11 +24,13 @@ export class GameManager {
 	public game: Game
 	public cameraNode: Node
 	public camera: Camera
+	public keybinds: Keybinds
 
 	constructor() {
 		// Create a new GameManager node and add it to the scene
 		this.node = new Node()
 		this.node.name = 'GameManager'
+		this.keybinds = this.node.addComponent(Keybinds)
 		director.getScene().addChild(this.node)
 
         // Make it as a persistent node, so it won't be destroyed when scene changes

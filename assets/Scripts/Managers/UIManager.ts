@@ -11,7 +11,8 @@ import { LoadingScreen } from 'db://assets/Scripts/UI/LoadingScreen/LoadingScree
 import { NetworkError } from 'db://assets/Scripts/UI/Notification/NetworkError'
 import { EndGameScreen } from 'db://assets/Scripts/UI/EndGameScreen/EndGameScreen'
 import { StatusBox } from 'db://assets/Scripts/UI/Notification/StatusBox'
-import { stat } from 'fs'
+import { PressAnyKeyScreen } from 'db://assets/Scripts/UI/PressAnyKeyScreen/PressAnyKeyScreen'
+import { Bind, KeybindCallback } from 'db://assets/Scripts/Components/Keybinds'
 
 const view = View.instance
 
@@ -27,6 +28,7 @@ export class UIManager {
 
 	public node!: Node
 	public canvas: Canvas
+	public prefabs: Map<string, Prefab> = new Map<string, Prefab>()
 	public UIState: UIState
 	public background: Node
 	public menu: Node
@@ -38,7 +40,6 @@ export class UIManager {
 	public matchmakingMenu: Node
 	public notifications: Node
 	public status: Node
-	public prefabs: Map<string, Prefab> = new Map<string, Prefab>()
 	public defaultAvatar: SpriteFrame
 	public countdownNode: Node
 	public countdownValueNode: Node
@@ -50,6 +51,7 @@ export class UIManager {
 	public readyIcon: SpriteFrame
 	public notReadyIcon: SpriteFrame
 	public loadingScreen: LoadingScreen
+	public pressAnyKeyScreen: PressAnyKeyScreen
 
 	constructor() {
 		// Create a new UIManager node and add it to the scene
@@ -194,6 +196,7 @@ export class UIManager {
 		this.playersScrollViewNode = find('RoomLayout/RoomPlayersLayout/PlayersScrollView', this.roomMenu)
 		this.playersScrollView = this.playersScrollViewNode.getComponent(PlayersScrollView)
 		this.loadingScreen = canvas.node.getChildByName('LoadingScreen').getComponent(LoadingScreen)
+		this.pressAnyKeyScreen = canvas.node.getChildByName('PressAnyKeyScreen').getComponent(PressAnyKeyScreen)
 	}
 
 	showInvitation(invitationData: InvitationData) {
@@ -255,6 +258,8 @@ export class UIManager {
 	updateCountdown(countdown: number) {
 		this.countdownValueLabel.string = String(countdown)
 	}
+
+	showPressAnyKeyScreen(bind: Bind, callback: KeybindCallback) {
+		this.pressAnyKeyScreen.show(bind, callback)
+	}
 }
-
-

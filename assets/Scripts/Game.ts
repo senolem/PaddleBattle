@@ -7,15 +7,17 @@ import { ShapeType } from './Enums/ShapeType';
 import { BodyType } from './Enums/BodyType';
 import { ObjectType } from './Enums/ObjectType';
 import { WorldObject } from './Components/WorldObject';
+import { Bind } from './Components/Keybinds';
 const { ccclass, property } = _decorator;
 
 @ccclass('Game')
 export class Game extends Component {
-	// Game canvas, background and HUD
+	// Game canvas, background, HUD and keybinds
 	private canvas: Canvas
 	private backgroundNode: Node
 	private background: Sprite
 	private hud: Node
+	private keybinds: Map<Bind, KeyCode> = new Map<Bind, KeyCode>()
 
 	// Left Player UI
 	private leftPlayerAvatarNode: Node
@@ -119,13 +121,17 @@ export class Game extends Component {
 		}
 	}
 
+	updateKeybinds(keybinds: Map<Bind, KeyCode>) {
+		this.keybinds = keybinds
+	}
+
 	onKeyDown(event: EventKeyboard) {
 		switch(event.keyCode) {
-			case KeyCode.KEY_W:
+			case this.keybinds.get(Bind.Upward):
 				NetworkManager.inst.movePaddle(PaddleState.Up)
 				break
 
-			case KeyCode.KEY_S:
+			case this.keybinds.get(Bind.Downward):
 				NetworkManager.inst.movePaddle(PaddleState.Down)
 				break
 		}
@@ -133,11 +139,11 @@ export class Game extends Component {
 
 	onKeyUp(event: EventKeyboard) {
 		switch(event.keyCode) {
-			case KeyCode.KEY_W:
+			case this.keybinds.get(Bind.Upward):
 				NetworkManager.inst.movePaddle(PaddleState.Stop)
 				break
 
-			case KeyCode.KEY_S:
+			case this.keybinds.get(Bind.Downward):
 				NetworkManager.inst.movePaddle(PaddleState.Stop)
 				break
 		}

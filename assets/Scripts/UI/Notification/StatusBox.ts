@@ -22,7 +22,7 @@ export class StatusBox extends Component {
 		// Click event
 		this.clickCallback = (event) => {
 			AudioManager.inst.playOneShotUI('status_close')
-			if (this.animation && !this.animation.getState) {
+			if (this.animation) {
             	this.animation.play('notificationFadeOut')
 			}
 		}
@@ -41,7 +41,7 @@ export class StatusBox extends Component {
 		this.messageLabel.string = message
 		this.animation.play('notificationFadeIn')
 		setTimeout(() => {
-			if (this.animation && !this.animation.getState) {
+			if (this.animation) {
 				this.animation.play('notificationFadeOut')
 			}
 		}, 2500)

@@ -5,8 +5,8 @@ import { Bind, KeybindCallback } from 'db://assets/Scripts/Components/Keybinds'
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
 const { ccclass, property } = _decorator
 
-@ccclass('MoveDownwardControlButton')
-export class MoveDownwardControlButton extends Component {
+@ccclass('PowerupControlButton')
+export class PowerupControlButton extends Component {
 	private buttonNode: Node
 	private button: Button
 	private keybindNode: Node
@@ -16,17 +16,17 @@ export class MoveDownwardControlButton extends Component {
 	private keybindCallback: KeybindCallback
 
 	protected onLoad(): void {
-		this.buttonNode = this.node.getChildByName('MoveDownwardControlButton')
+		this.buttonNode = this.node.getChildByName('PowerupControlButton')
 		this.button = this.buttonNode.getComponent(Button)
 		this.keybindNode = this.buttonNode.getChildByName('Label')
 		this.keybindLabel = this.keybindNode.getComponent(Label)
 
-		this.updateKeybindLabel(GameManager.inst.keybinds.getKeybind(Bind.Downward))
+		this.updateKeybindLabel(GameManager.inst.keybinds.getKeybind(Bind.Powerup))
 
 		// Click event
 		this.clickCallback = (event) => {
 			AudioManager.inst.playOneShotUI('button_click')
-			UIManager.inst.pressAnyKeyScreen.show(Bind.Downward, this.updateKeybindLabel.bind(this))
+			UIManager.inst.pressAnyKeyScreen.show(Bind.Powerup, this.updateKeybindLabel.bind(this))
 		}
 
 		// Hover event
