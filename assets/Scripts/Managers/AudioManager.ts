@@ -80,7 +80,7 @@ export class AudioManager {
         else {
             resources.load(sound, (err, clip: AudioClip) => {
                 if (err) {
-                    console.log(err)
+                    console.error(err)
                 }
                 else {
                     this._effectsSource.playOneShot(clip)
@@ -121,7 +121,7 @@ export class AudioManager {
         else {
             resources.load(sound, (err, clip: AudioClip) => {
                 if (err) {
-                    console.log(err)
+                    console.error(err)
                 }
                 else {
                     this._musicSource.clip = clip

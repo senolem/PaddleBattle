@@ -1,5 +1,6 @@
 import { _decorator, Button, Component, find, Node, Label, Sprite, SpriteFrame } from 'cc'
 import { UIManager } from 'db://assets/Scripts/Managers/UIManager'
+import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
 const { ccclass, property } = _decorator
 
 @ccclass('PlayerItem')
@@ -29,6 +30,7 @@ export class PlayerItem extends Component {
 	setReady(ready: boolean) {
 		if (ready) {
 			this.playerReady.spriteFrame = UIManager.inst.readyIcon
+			AudioManager.inst.playOneShotUI('status_ready')
 		} else {
 			this.playerReady.spriteFrame = UIManager.inst.notReadyIcon
 		}

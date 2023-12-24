@@ -14,7 +14,6 @@ export class ReadyButton extends Component {
 
 		// Click event
 		this.clickCallback = (event) => {
-			AudioManager.inst.playOneShotUI('button_click')
 			NetworkManager.inst.setReady()
 		}
 

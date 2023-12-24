@@ -36,10 +36,10 @@ export class MapsScrollView extends Component {
 		} else {
 			assetManager.loadRemote<ImageAsset>(map.thumbnailUrl + '?authorization=' + NetworkManager.inst.getAuthorization, (err, imageAsset) => {
 				if (err) {
-					console.log(`Failed to download thumbnail: ${map.thumbnailUrl} ${err}`)
+					console.error(`Failed to download thumbnail: ${map.thumbnailUrl} ${err}`)
 				}
 				else if (imageAsset) {
-					console.log(`Downloaded thumbnail: ${map.thumbnailUrl}`)
+					console.debug(`Downloaded thumbnail: ${map.thumbnailUrl}`)
 					const thumbnailTexture = new Texture2D()
 					thumbnailTexture.image = imageAsset
 					const thumbnailSpriteFrame = new SpriteFrame()
@@ -59,10 +59,10 @@ export class MapsScrollView extends Component {
 		} else {
 			assetManager.loadRemote<ImageAsset>(map.backgroundUrl + '?authorization=' + NetworkManager.inst.getAuthorization, (err, imageAsset) => {
 				if (err) {
-					console.log(`Failed to download background: ${map.backgroundUrl} ${err}`)
+					console.error(`Failed to download background: ${map.backgroundUrl} ${err}`)
 				}
 				else if (imageAsset) {
-					console.log(`Downloaded background: ${map.backgroundUrl}`)
+					console.debug(`Downloaded background: ${map.backgroundUrl}`)
 					const backgroundTexture = new Texture2D()
 					backgroundTexture.image = imageAsset
 					const backgroundSpriteFrame = new SpriteFrame()
@@ -81,10 +81,10 @@ export class MapsScrollView extends Component {
 		} else {
 			assetManager.loadRemote<AudioClip>(map.musicUrl + '?authorization=' + NetworkManager.inst.getAuthorization, (err, audioClip) => {
 				if (err) {
-					console.log(`Failed to download music: ${map.musicUrl} ${err}`)
+					console.error(`Failed to download music: ${map.musicUrl} ${err}`)
 				}
 				else if (audioClip) {
-					console.log(`Downloaded music: ${map.musicUrl}`)
+					console.debug(`Downloaded music: ${map.musicUrl}`)
 					newMap.music = audioClip
 					GameManager.inst.musicCache.set(map.musicUrl, audioClip)
 				}
@@ -94,9 +94,7 @@ export class MapsScrollView extends Component {
 
 	clearMaps(): void {
 		if (this.contentNode) {
-			this.contentNode.children.forEach((node) => {
-				node.destroy()
-			})
+			this.contentNode.destroyAllChildren()
 		}
 	}
 

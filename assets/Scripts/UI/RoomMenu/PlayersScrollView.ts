@@ -28,10 +28,10 @@ export class PlayersScrollView extends Component {
 		playerItemNode.parent = this.contentNode
 		assetManager.loadRemote<ImageAsset>(avatarUrl + '?authorization=' + NetworkManager.inst.getAuthorization, (err, imageAsset) => {
 			if (err) {
-				console.log(`Failed to download avatar: ${avatarUrl} ${err}`)
+				console.error(`Failed to download avatar: ${avatarUrl} ${err}`)
 			}
 			else if (imageAsset) {
-				console.log(`Downloaded avatar: ${avatarUrl}`)
+				console.debug(`Downloaded avatar: ${avatarUrl}`)
 				const avatarTexture = new Texture2D();
 				avatarTexture.image = imageAsset;
 				const avatarSpriteFrame = new SpriteFrame();
@@ -62,5 +62,10 @@ export class PlayersScrollView extends Component {
 		const playerItemNode = this.players.get(id)
 		const playerItem = playerItemNode.getComponent(PlayerItem)
 		playerItem.setReady(ready)
+	}
+
+	clearPlayers() {
+		this.contentNode.destroyAllChildren()
+		this.players.clear()
 	}
 }

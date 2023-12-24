@@ -97,6 +97,10 @@ export class NetworkManager {
 					UIManager.inst.switchUIState(UIState.PlayMenu)
 				})
 
+				if ((!this.GameRoom || !this.GameRoom.connection.isOpen) && UIManager.inst.UIState === UIState.RoomMenu) {
+					UIManager.inst.switchUIState(UIState.PlayMenu)
+				} 
+
 				console.debug(`Successfully joined LobbyRoom (${this.LobbyRoom.id})`)
 				console.debug(`Current sessionId : ${this.LobbyRoom.sessionId}`)
 				UIManager.inst.showStatus('You are now connected', 'Successfully joined lobby')
@@ -179,6 +183,10 @@ export class NetworkManager {
 				})
 			})
 
+			this.GameRoom.onMessage('endGame', () => {
+				UIManager.inst.showEndGameScreen()
+			})
+
 			this.GameRoom.state.listen('countdownStarted', (value) => {
 				if (value) {
 					UIManager.inst.enableCountdown()
@@ -217,11 +225,12 @@ export class NetworkManager {
 				UIManager.inst.playersScrollView.removePlayer(player.id)
 			})
 
+			UIManager.inst.playersScrollView.clearPlayers()
 			console.debug(`Successfully joined GameRoom (${this.GameRoom.id})`)
 			UIManager.inst.showStatus('You are now connected', 'Successfully joined game')
 		} catch (error) {
-			if (this.GameRoom) {
-				this.leaveRoom()
+			if (UIManager.inst.UIState === UIState.RoomMenu) {
+				UIManager.inst.switchUIState(UIState.PlayMenu)
 			}
 			console.error(error)
 		}
@@ -233,11 +242,10 @@ export class NetworkManager {
 		const gameCanvas: Canvas = gameCanvasNode.getComponent(Canvas)
 		gameCanvas.cameraComponent = GameManager.inst.camera
 		GameManager.inst.game = gameCanvasNode.getComponent(Game)
+		GameManager.inst.keybinds.updateKeybinds()
 		UIManager.inst.loadingScreen.setLoadingInfo('Clearing UI')
 		UIManager.inst.switchUIState(UIState.None)
-		UIManager.inst.notifications.children.forEach((node) => {
-			node.destroy()
-		})
+		UIManager.inst.notifications.destroyAllChildren()
 		UIManager.inst.loadingScreen.setLoadingInfo('Setting UI')
 		const selectedMap = GameManager.inst.maps.get(this.GameRoom.state.selectedMap)
 		GameManager.inst.game.setBackground(selectedMap.background)
@@ -255,10 +263,6 @@ export class NetworkManager {
 			UIManager.inst.loadingScreen.hide()
 			AudioManager.inst.musicSource.play()
 			GameManager.inst.game.showHUD()
-		})
-
-		this.LobbyRoom.onMessage('endGame', () => {
-			UIManager.inst.showEndGameScreen()
 		})
 
 		this.GameRoom.state.objects.onAdd((object, key) => {
@@ -335,15 +339,17 @@ export class NetworkManager {
 	}
 
 	getEndGameScreenData(): EndGameScreenData {
-		let winner: string
+		let winner
 		const myself: string = this.GameRoom.sessionId
 		let title: string
 		let result: number = 0
+		const leftPlayer = this.GameRoom.state.players.get(this.GameRoom.state.leftPlayer)
+		const rightPlayer = this.GameRoom.state.players.get(this.GameRoom.state.rightPlayer)
 
-		if (this.GameRoom.state.leftPlayerScore > this.GameRoom.state.rightPlayerScore) {
-			winner = this.GameRoom.state.leftPlayer
-		} else if (this.GameRoom.state.leftPlayerScore < this.GameRoom.state.rightPlayerScore) {
-			winner = this.GameRoom.state.rightPlayer
+		if (leftPlayer.score > rightPlayer.score) {
+			winner = leftPlayer
+		} else if (leftPlayer.score < rightPlayer.score) {
+			winner = rightPlayer
 		} else {
 			winner = this.GameRoom.sessionId
 		}
@@ -362,12 +368,11 @@ export class NetworkManager {
 			}
 		}
 
-		const winnerPlayer = this.GameRoom.state.players.get(winner)
 		const data: EndGameScreenData = {
-			username: winnerPlayer.username,
-			avatar: GameManager.inst.avatarCache.get(winnerPlayer.avatarUrl),
-			leftPlayerScore: this.GameRoom.state.leftPlayerScore,
-			rightPlayerScore: this.GameRoom.state.rightPlayerScore,
+			username: winner.username,
+			avatar: GameManager.inst.avatarCache.get(winner.avatarUrl),
+			leftPlayerScore: leftPlayer.score,
+			rightPlayerScore: rightPlayer.score,
 			title,
 			result
 		}

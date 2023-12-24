@@ -45,7 +45,15 @@ export class MoveDownwardControlButton extends Component {
 		this.buttonNode.off(Node.EventType.MOUSE_ENTER, this.hoverCallback)
 	}
 
-	private updateKeybindLabel(keycode: KeyCode): void {
-		this.keybindLabel.string = `${KeyCode[keycode]}`;
+	private updateKeybindLabel(keyCode: KeyCode): void {
+		let keyString = KeyCode[keyCode];
+
+		if (keyString.startsWith('KEY_')) {
+			keyString = keyString.substring(4);
+		}
+
+		keyString = keyString.replace(/_/g, ' ');
+
+		this.keybindLabel.string = keyString;
 	}
 }

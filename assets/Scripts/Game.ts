@@ -115,9 +115,12 @@ export class Game extends Component {
 	}
 
 	destroyObject(key: string) {
-		const gameObject = this.objects.get(key)
-		if (gameObject) {
-			gameObject.destroy()
+		if (this.objects) {
+			const gameObject = this.objects.get(key)
+			if (gameObject) {
+				gameObject.destroy()
+			}
+			this.objects.delete(key)
 		}
 	}
 
