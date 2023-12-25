@@ -8,8 +8,8 @@ import { InvitationData } from 'db://assets/Scripts/Components/InvitationData'
 import { MapData } from 'db://assets/Scripts/Components/MapData'
 import { Game } from 'db://assets/Scripts/Game'
 import { PaddleState } from 'db://assets/Scripts/Enums/PaddleState'
-import { AudioManager } from './AudioManager'
-import { EndGameScreenData } from '../Components/EndGameScreenData'
+import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
+import { EndGameScreenData } from 'db://assets/Scripts/Components/EndGameScreenData'
 
 @ccclass('NetworkManager')
 export class NetworkManager {
@@ -164,9 +164,7 @@ export class NetworkManager {
 			})
 
 			this.GameRoom.onMessage('loadMenu', () => {
-				AudioManager.inst.musicSource.stop()
 				director.loadScene('Menu', () => {
-					AudioManager.inst.musicSource.stop()
 					UIManager.inst.loadingScreen.hide()
 					UIManager.inst.switchUIState(UIState.RoomMenu)
 				})
@@ -184,6 +182,7 @@ export class NetworkManager {
 			})
 
 			this.GameRoom.onMessage('endGame', () => {
+				AudioManager.inst.musicSource.stop()
 				UIManager.inst.showEndGameScreen()
 			})
 
@@ -267,10 +266,6 @@ export class NetworkManager {
 
 		this.GameRoom.state.objects.onAdd((object, key) => {
 			const worldObject = GameManager.inst.game.instantiateObject(object, key)
-
-			object.position.onChange(() => {
-				worldObject.move(object.position)
-			})
 		})
 		
 		this.GameRoom.state.objects.onRemove((object, key) => {
@@ -314,7 +309,7 @@ export class NetworkManager {
 		this.LobbyRoom.send('leaveMatchmaking')
 	}
 
-	public get getOnlineUsers(): number {
+	get getOnlineUsers(): number {
 		if (this.LobbyRoom) {
 			return this.LobbyRoom.state.players.size
 		}
@@ -327,7 +322,7 @@ export class NetworkManager {
 		}
 	}
 
-	public get getSelectedMap(): number {
+	get getSelectedMap(): number {
 		if (this.GameRoom) {
 			return this.GameRoom.state.selectedMap
 		}
@@ -347,15 +342,15 @@ export class NetworkManager {
 		const rightPlayer = this.GameRoom.state.players.get(this.GameRoom.state.rightPlayer)
 
 		if (leftPlayer.score > rightPlayer.score) {
-			winner = leftPlayer
+			winner = this.GameRoom.state.leftPlayer
 		} else if (leftPlayer.score < rightPlayer.score) {
-			winner = rightPlayer
+			winner = this.GameRoom.state.rightPlayer
 		} else {
-			winner = this.GameRoom.sessionId
+			winner = myself
 		}
 
 		if (!winner) {
-			winner = this.GameRoom.sessionId
+			winner = myself
 			title = 'DRAW'
 			result = 0
 		} else {
@@ -364,13 +359,14 @@ export class NetworkManager {
 				result = 1
 			} else {
 				title = 'YOU LOSE !'
-				result = 3
+				result = 2
 			}
 		}
 
+		const winnerUser = this.GameRoom.state.players.get(winner)
 		const data: EndGameScreenData = {
-			username: winner.username,
-			avatar: GameManager.inst.avatarCache.get(winner.avatarUrl),
+			username: winnerUser.username,
+			avatar: GameManager.inst.avatarCache.get(winnerUser.avatarUrl),
 			leftPlayerScore: leftPlayer.score,
 			rightPlayerScore: rightPlayer.score,
 			title,
@@ -379,7 +375,15 @@ export class NetworkManager {
 		return data
 	}
 
-	public get getAuthorization(): string {
+	get getAuthorization(): string {
 		return this.authorization	
+	}
+
+	get getLobbyRoom(): Colyseus.Room {
+		return this.LobbyRoom
+	}
+
+	get getGameRoom(): Colyseus.Room {
+		return this.GameRoom
 	}
 }

@@ -1,23 +1,24 @@
-import { _decorator, Canvas, Component, EventKeyboard, find, game, Input, input, KeyCode, Label, Node, resources, Sprite, SpriteFrame, UITransform, Vec3 } from 'cc';
+import { _decorator, Canvas, Component, EventKeyboard, find, game, Input, input, KeyCode, Label, lerp, Node, resources, Sprite, SpriteFrame, UITransform, Vec3 } from 'cc';
 import Colyseus from 'db://colyseus-sdk/colyseus.js'
-import { NetworkManager } from './Managers/NetworkManager';
-import { PaddleState } from './Enums/PaddleState';
+import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager';
+import { PaddleState } from 'db://assets/Scripts/Enums/PaddleState';
+import { ObjectType } from 'db://assets/Scripts/Enums/ObjectType';
+import { WorldObject } from 'db://assets/Scripts/Components/WorldObject';
+import { Bind } from 'db://assets/Scripts/Components/Keybinds';
+import { GameState } from './Enums/GameState';
 import { GameManager } from './Managers/GameManager';
-import { ShapeType } from './Enums/ShapeType';
-import { BodyType } from './Enums/BodyType';
-import { ObjectType } from './Enums/ObjectType';
-import { WorldObject } from './Components/WorldObject';
-import { Bind } from './Components/Keybinds';
 const { ccclass, property } = _decorator;
 
 @ccclass('Game')
 export class Game extends Component {
 	// Game canvas, background, HUD and keybinds
+	public gameRoom: Colyseus.Room
 	private canvas: Canvas
 	private backgroundNode: Node
 	private background: Sprite
 	private hud: Node
 	private keybinds: Map<Bind, KeyCode> = new Map<Bind, KeyCode>()
+	private paddleId: string
 
 	// Left Player UI
 	private leftPlayerAvatarNode: Node
@@ -43,7 +44,7 @@ export class Game extends Component {
 	public leftPaddle: WorldObject
 	public rightPaddle: WorldObject
 	public ball: WorldObject
-	public objects: Map<string, WorldObject> = new Map<string, WorldObject>()
+	public objects: Map<string, WorldObject>
 
 	protected onLoad(): void {
 		this.canvas = this.node.getComponent(Canvas)
@@ -65,6 +66,8 @@ export class Game extends Component {
 		this.rightPlayerUsername = this.rightPlayerUsernameNode.getComponent(Label)
 		this.rightPlayerScoreNode = find('GameHUD/ScoreLayout/ScoreFrameLayout/ScoreValueLayout/ScoreRight', this.node)
 		this.rightPlayerScore = this.rightPlayerScoreNode.getComponent(Label)
+
+		this.gameRoom = NetworkManager.inst.getGameRoom
 	}
 
 	protected onEnable(): void {
@@ -77,8 +80,27 @@ export class Game extends Component {
 		input.off(Input.EventType.KEY_UP, this.onKeyUp, this)
 	}
 
+	protected update(dt: number): void {
+		if (this.gameRoom.state.gameState === GameState.Playing) {
+			this.objects.forEach((object) => {
+				if (object.id !== this.paddleId) {
+					const position = object.node.position.clone()
+					position.x = lerp(position.x, object.state.position.x, 0.8)
+					position.y = lerp(position.y, object.state.position.y, 0.8)
+					object.node.position = position
+				} else {
+					object.node.position = object.state.position
+				}
+			})
+		}
+	}
+
 	instantiateObject(object, key: string): WorldObject{
-		const worldObject: WorldObject = new WorldObject(object.id, this.node, object.position, object.size, object.shapeType, object.bodyType, object.texture)
+		if (!this.objects) {
+			this.objects = new Map<string, WorldObject>()
+		}
+
+		const worldObject: WorldObject = new WorldObject(object, object.id, this.node)
 
 		switch (object.objectType) {
 			case ObjectType.TopWall:
@@ -99,10 +121,16 @@ export class Game extends Component {
 
 			case ObjectType.LeftPaddle:
 				this.leftPaddle = worldObject
+				if (this.gameRoom.sessionId === this.gameRoom.state.leftPlayer) {
+					this.paddleId = worldObject.id
+				}
 				break
 
 			case ObjectType.RightPaddle:
 				this.rightPaddle = worldObject
+				if (this.gameRoom.sessionId === this.gameRoom.state.rightPlayer) {
+					this.paddleId = worldObject.id
+				}
 				break
 				
 			case ObjectType.Ball:
@@ -179,23 +207,23 @@ export class Game extends Component {
 	}
 
 	setLeftPlayerScore(leftPlayerScore: number) {
-		if (leftPlayerScore != undefined) {
+		if (this.leftPlayerAvatar && leftPlayerScore) {
 			this.leftPlayerScore.string = String(leftPlayerScore)
 		}
 	}
 
 	setRightPlayerScore(rightPlayerScore: number) {
-		if (rightPlayerScore) {
+		if (this.rightPlayerScore && rightPlayerScore) {
 			this.rightPlayerScore.string = String(rightPlayerScore)
 		}
 	}
 
 	setScores(leftPlayerScore: number, rightPlayerScore: number) {
-		if (leftPlayerScore != undefined) {
+		if (this.leftPlayerAvatar && leftPlayerScore) {
 			this.leftPlayerScore.string = String(leftPlayerScore)
 		}
 
-		if (rightPlayerScore != undefined) {
+		if (this.rightPlayerScore && rightPlayerScore) {
 			this.rightPlayerScore.string = String(rightPlayerScore)
 		}
 	}

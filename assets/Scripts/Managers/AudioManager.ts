@@ -33,6 +33,10 @@ export class AudioManager {
 		this._effectsSource = this.node.addComponent(AudioSource)
 		this._UISource = this.node.addComponent(AudioSource)
 
+		this._musicSource.playOnAwake = false
+		this._effectsSource.playOnAwake = false
+		this._UISource.playOnAwake = false
+
 		this._musicSource.volume = this.getMusicVolume
 		this._effectsSource.volume = this.getEffectsVolume
 		this._UISource.volume = this.getUIVolume

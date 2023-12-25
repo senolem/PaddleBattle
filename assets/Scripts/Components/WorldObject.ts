@@ -1,23 +1,22 @@
 import { _decorator, MobilityMode, Node, Sprite, SpriteFrame, UITransform, Vec3 } from "cc"
-import { BodyType } from "db://assets/Scripts/Enums/BodyType"
-import { ShapeType } from "db://assets/Scripts/Enums/ShapeType"
-import { ObjectType } from "db://assets/Scripts/Enums/ObjectType"
-import { GameManager } from "../Managers/GameManager"
+import { GameManager } from "db://assets/Scripts/Managers/GameManager"
 const { ccclass } = _decorator
 
 @ccclass('WorldObject')
 export class WorldObject {
 	node: Node
+	state: any
 	transform: UITransform
 	sprite: Sprite
 	id: string
 
-	constructor(id: string, parent: Node, position: Vec3, size: Vec3, shapeType: ShapeType, bodyType: BodyType, texture: string) {
+	constructor(state: any, id: string, parent: Node) {
 		this.id = id
 		this.node = new Node()
 		this.node.parent = parent
 		this.node.name = this.id
 		this.node.layer = 1 << 18
+		this.state = state
 		//switch (bodyType) {
 		//	case BodyType.Static:
 		//		this.node.mobility = MobilityMode.Static
@@ -34,15 +33,19 @@ export class WorldObject {
 		this.transform = this.node.addComponent(UITransform)
 		this.sprite = this.node.addComponent(Sprite)
 
-		this.node.position = position
-		this.transform.width = size.x
-		this.transform.height = size.y
-		const spriteFrame = GameManager.inst.textureCache.get(texture)
+		this.node.position = state.position
+		this.transform.width = state.size.x
+		this.transform.height = state.size.y
+		const spriteFrame = GameManager.inst.textureCache.get(state.texture)
 		this.sprite.spriteFrame = spriteFrame
 	}
 
 	move(position: Vec3) {
 		this.node.position = position
+	}
+
+	linear(p0: number, p1: number, t: number): number {
+		return p0 + (p1 - p0) * t;
 	}
 
 	destroy() {
