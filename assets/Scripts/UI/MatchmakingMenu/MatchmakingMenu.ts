@@ -4,15 +4,13 @@ const { ccclass, property } = _decorator
 
 @ccclass('MatchmakingMenu')
 export class MatchmakingMenu extends Component {
-	private avatarNode: Node
-	private avatarSprite: Sprite
+	private spinnerNode: Node
 	private messageNode: Node
 	private message: Label
 	private onlineUsers: number
 
 	protected onLoad(): void {
-		this.avatarNode = find('MatchmakingLayout/Avatar/AvatarSprite', this.node)
-		this.avatarSprite = this.avatarNode.getComponent(Sprite)
+		this.spinnerNode = find('MatchmakingLayout/TitleLayout/SearchingLayout/SpinnerLayout/Spinner', this.node)
     	this.messageNode = find('MatchmakingLayout/TitleLayout/Message', this.node)
     	this.message = this.messageNode.getComponent(Label)
 	}
@@ -23,6 +21,7 @@ export class MatchmakingMenu extends Component {
 	}
 
 	protected update(dt: number): void {
+		this.spinnerNode.angle += 5
 		if (NetworkManager.inst.getOnlineUsers != this.onlineUsers) {
 			this.onlineUsers = NetworkManager.inst.getOnlineUsers
 			this.message.string = `${String(this.onlineUsers)} players online`

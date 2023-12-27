@@ -61,12 +61,6 @@ export class UIManager {
 
 		// Make it as a persistent node, so it won't be destroyed when scene changes
 		director.addPersistRootNode(this.node)
-
-		// Make the game responsive
-		this.makeResponsive()
-		window.addEventListener('resize', () => {
-			this.makeResponsive()
-		})
 	}
 
 	loadResources() {
@@ -157,23 +151,6 @@ export class UIManager {
 		}
 	}
 
-	makeResponsive(): void {
-		const resolutionPolicy = view.getResolutionPolicy()
-		const designResolution = view.getDesignResolutionSize()
-		const desiredRatio = designResolution.width / designResolution.height
-		const deviceRatio = screen.width / screen.height
-
-		if (deviceRatio >= desiredRatio) {
-			resolutionPolicy.setContentStrategy(ResolutionPolicy.ContentStrategy.FIXED_HEIGHT)
-		}
-
-		if (deviceRatio <= desiredRatio) {
-			resolutionPolicy.setContentStrategy(ResolutionPolicy.ContentStrategy.FIXED_WIDTH)
-		}
-
-		view.setResolutionPolicy(resolutionPolicy)
-	}
-
 	setCanvas(canvas: Canvas) {
 		this.canvas = canvas
 		GameManager.inst.cameraNode = canvas.node.getChildByName('Camera')
@@ -187,7 +164,7 @@ export class UIManager {
 		this.controlsSettingsMenu = canvas.node.getChildByName('ControlsSettingsMenu')
 		this.matchmakingMenu = canvas.node.getChildByName('MatchmakingMenu')
 		this.notifications = canvas.node.getChildByName('Notifications')
-		this.status = this.notifications.getChildByName('Status')
+		this.status = canvas.node.getChildByName('Status')
 		this.countdownNode = this.roomMenu.getChildByName('CountdownLayout')
 		this.countdownValueNode = find('CountdownValue', this.countdownNode)
 		this.countdownValueLabel = this.countdownValueNode.getComponent(Label)
