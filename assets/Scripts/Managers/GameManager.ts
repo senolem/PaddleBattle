@@ -1,4 +1,4 @@
-import { _decorator, Node, director, Texture2D, SpriteFrame, AudioClip, Camera, resources } from 'cc'
+import { _decorator, Node, director, Texture2D, SpriteFrame, AudioClip, Camera, resources, view, screen, ResolutionPolicy } from 'cc'
 import { GameMap } from 'db://assets/Scripts/Components/GameMap'
 import { Game } from 'db://assets/Scripts/Game'
 import { Keybinds } from 'db://assets/Scripts/Components/Keybinds'
@@ -35,6 +35,13 @@ export class GameManager {
 
         // Make it as a persistent node, so it won't be destroyed when scene changes
         director.addPersistRootNode(this.node)
+
+		this.makeResponsive()
+	}
+
+	makeResponsive(): void {
+		const resolutionPolicy = new ResolutionPolicy(ResolutionPolicy.ContainerStrategy.PROPORTION_TO_FRAME, ResolutionPolicy.ContentStrategy.EXACT_FIT)
+		view.setResolutionPolicy(resolutionPolicy)
 	}
 
 	loadResources() {
