@@ -62,6 +62,10 @@ export class NetworkManager {
 					UIManager.inst.showNotification(error)
 				})
 
+				this.LobbyRoom.onMessage('status', (status) => {
+					UIManager.inst.showStatus(status.title, status.message)
+				})
+
 				this.LobbyRoom.onMessage('setAuthorization', (authorization: string) => {
 					this.authorization = authorization
 				})
@@ -89,17 +93,17 @@ export class NetworkManager {
 					UIManager.inst.showInvitation(invitation)
 				})
 
-				this.LobbyRoom.onMessage('joinMatchmaking', () => {
+				this.LobbyRoom.onMessage('joinedMatchmaking', () => {
 					UIManager.inst.switchUIState(UIState.MatchmakingMenu)
 				})
 
-				this.LobbyRoom.onMessage('leaveMatchmaking', () => {
+				this.LobbyRoom.onMessage('leftMatchmaking', () => {
 					UIManager.inst.switchUIState(UIState.PlayMenu)
 				})
 
 				if ((!this.GameRoom || !this.GameRoom.connection.isOpen) && UIManager.inst.UIState === UIState.RoomMenu) {
 					UIManager.inst.switchUIState(UIState.PlayMenu)
-				} 
+				}
 
 				console.debug(`Successfully joined LobbyRoom (${this.LobbyRoom.id})`)
 				console.debug(`Current sessionId : ${this.LobbyRoom.sessionId}`)
@@ -138,6 +142,10 @@ export class NetworkManager {
 			this.GameRoom.onMessage('server_error', (error: string) => {
 				console.error(`[GameRoom] ${error}`)
 				UIManager.inst.showNotification(error)
+			})
+
+			this.LobbyRoom.onMessage('status', (status) => {
+				UIManager.inst.showStatus(status.title, status.message)
 			})
 
 			this.GameRoom.onMessage('updateMaps', (maps: MapData[]) => {
@@ -202,8 +210,8 @@ export class NetworkManager {
 				UIManager.inst.mapsScrollView.setSelectedMap(value)
 			})
 
-			this.GameRoom.state.players.onAdd((player, key) => {
-				UIManager.inst.playersScrollView.addPlayer(player.id, player.username, player.avatarUrl, player.ready)
+			this.GameRoom.state.players.onAdd(async (player, key) => {
+				await UIManager.inst.playersScrollView.addPlayer(player.id, player.username, player.avatarUrl, player.ready)
 
 				player.listen('ready', (value) => {
 					UIManager.inst.playersScrollView.updatePlayer(player.id, value)

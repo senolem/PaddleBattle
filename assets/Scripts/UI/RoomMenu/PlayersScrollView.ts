@@ -16,13 +16,14 @@ export class PlayersScrollView extends Component {
 		this.playerItemPrefab = UIManager.inst.prefabs.get('PlayerItem')
 	}
 
-	addPlayer(id: number, username: string, avatarUrl: string, isReady: boolean): void {
+	async addPlayer(id: number, username: string, avatarUrl: string, isReady: boolean): Promise<void> {
 		const existingNode = this.players.get(id)
 		if (existingNode) {
 			console.error(`${username} already exists`)
 		}
 
-		const playerItemNode = instantiate(this.playerItemPrefab)
+		this.players.set(id, null)
+		const playerItemNode = await instantiate(this.playerItemPrefab)
 		const playerItem = playerItemNode.getComponent(PlayerItem)
 		this.players.set(id, playerItemNode)
 		playerItemNode.parent = this.contentNode
@@ -55,7 +56,10 @@ export class PlayersScrollView extends Component {
 
 	removePlayer(id: number): void {
 		const playerItemNode = this.players.get(id)
-		playerItemNode.destroy()
+		if (playerItemNode) {
+			playerItemNode.destroy()
+			this.players.delete(id)
+		}
 	}
 
 	setPlayerReady(id: number, ready: boolean): void {

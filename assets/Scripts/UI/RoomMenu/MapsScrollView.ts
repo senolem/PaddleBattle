@@ -95,6 +95,7 @@ export class MapsScrollView extends Component {
 	clearMaps(): void {
 		if (this.contentNode) {
 			this.contentNode.destroyAllChildren()
+			GameManager.inst.maps.clear()
 		}
 	}
 

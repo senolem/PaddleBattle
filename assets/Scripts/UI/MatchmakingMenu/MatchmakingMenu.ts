@@ -8,6 +8,7 @@ export class MatchmakingMenu extends Component {
 	private avatarSprite: Sprite
 	private messageNode: Node
 	private message: Label
+	private onlineUsers: number
 
 	protected onLoad(): void {
 		this.avatarNode = find('MatchmakingLayout/Avatar/AvatarSprite', this.node)
@@ -17,6 +18,14 @@ export class MatchmakingMenu extends Component {
 	}
 
 	protected start(): void {
-		this.message.string = `${String(NetworkManager.inst.getOnlineUsers)} + players online`
+		this.onlineUsers = NetworkManager.inst.getOnlineUsers
+		this.message.string = `${String(this.onlineUsers)} players online`
+	}
+
+	protected update(dt: number): void {
+		if (NetworkManager.inst.getOnlineUsers != this.onlineUsers) {
+			this.onlineUsers = NetworkManager.inst.getOnlineUsers
+			this.message.string = `${String(this.onlineUsers)} players online`
+		}
 	}
 }
