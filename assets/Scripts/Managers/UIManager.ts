@@ -13,6 +13,7 @@ import { EndGameScreen } from 'db://assets/Scripts/UI/EndGameScreen/EndGameScree
 import { StatusBox } from 'db://assets/Scripts/UI/Notification/StatusBox'
 import { PressAnyKeyScreen } from 'db://assets/Scripts/UI/PressAnyKeyScreen/PressAnyKeyScreen'
 import { Bind, KeybindCallback } from 'db://assets/Scripts/Components/Keybinds'
+import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
 
 const view = View.instance
 
@@ -233,6 +234,9 @@ export class UIManager {
 	}
 
 	updateCountdown(countdown: number) {
+		if (countdown > 0) {
+			AudioManager.inst.playOneShotUI('tick')
+		}
 		this.countdownValueLabel.string = String(countdown)
 	}
 

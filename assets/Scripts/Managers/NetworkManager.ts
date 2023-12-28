@@ -144,7 +144,7 @@ export class NetworkManager {
 				UIManager.inst.showNotification(error)
 			})
 
-			this.LobbyRoom.onMessage('status', (status) => {
+			this.GameRoom.onMessage('status', (status) => {
 				UIManager.inst.showStatus(status.title, status.message)
 			})
 
@@ -184,6 +184,7 @@ export class NetworkManager {
 			})
 
 			this.GameRoom.onMessage('loadGame', () => {
+				AudioManager.inst.playOneShotUI('game_start')
 				director.loadScene('Game', () => {
 					this.loadGame()
 				})
