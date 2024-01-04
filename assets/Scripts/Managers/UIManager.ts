@@ -64,21 +64,30 @@ export class UIManager {
 		director.addPersistRootNode(this.node)
 	}
 
-	loadResources() {
-		resources.loadDir("UI", function (err, assets) {
-			assets.forEach(function (asset) {
-				if (asset instanceof Prefab) {
-					UIManager.inst.prefabs.set(asset.name, asset)
-				} else if (asset instanceof SpriteFrame) {
-					if (asset.name === 'default') {
-						UIManager.inst.defaultAvatar = asset
-					} else if (asset.name === 'ready') {
-						UIManager.inst.readyIcon = asset
-					} else if (asset.name === 'notReady') {
-						UIManager.inst.notReadyIcon = asset
-					}
+	loadResources(): Promise<void> {
+		return new Promise((resolve, reject) => {
+			resources.loadDir("UI", function (err, assets) {
+				if (err) {
+					reject(err)
+					return
 				}
+
+				assets.forEach(function (asset) {
+					if (asset instanceof Prefab) {
+						UIManager.inst.prefabs.set(asset.name, asset)
+					} else if (asset instanceof SpriteFrame) {
+						if (asset.name === 'default') {
+							UIManager.inst.defaultAvatar = asset
+						} else if (asset.name === 'ready') {
+							UIManager.inst.readyIcon = asset
+						} else if (asset.name === 'notReady') {
+							UIManager.inst.notReadyIcon = asset
+						}
+					}
+				})
 			})
+
+			resolve()
 		})
 	}
 

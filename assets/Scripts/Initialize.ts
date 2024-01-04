@@ -9,7 +9,11 @@ const { ccclass, property } = _decorator
 @ccclass('Initialize')
 export class Initialize extends Component {
 
-    protected onLoad(): void {
+    protected async onLoad(): Promise<void> {
+		await GameManager.inst.loadResources()
+		await AudioManager.inst.loadResources()
+		await UIManager.inst.loadResources()
+
 		if (GameManager.inst) {
 			console.log('GameManager initialized')
 		}
@@ -24,14 +28,12 @@ export class Initialize extends Component {
 		}
 		
 		Layers.addLayer('GAME', 18)
-		GameManager.inst.loadResources()
-		AudioManager.inst.loadResources()
-		UIManager.inst.loadResources()
 		director.loadScene("Menu", () => {
 			const canvasNode = director.getScene().getChildByName('UICanvas')
 			director.addPersistRootNode(canvasNode)
 			UIManager.inst.setCanvas(canvasNode.getComponent(Canvas))
 			UIManager.inst.switchUIState(UIState.Menu)
+			AudioManager.inst.play('menu')
 			NetworkManager.inst.connect()
 		})
 	}

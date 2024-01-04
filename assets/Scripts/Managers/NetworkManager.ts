@@ -7,9 +7,9 @@ import { UIState } from 'db://assets/Scripts/Enums/UIState'
 import { InvitationData } from 'db://assets/Scripts/Components/InvitationData'
 import { MapData } from 'db://assets/Scripts/Components/MapData'
 import { Game } from 'db://assets/Scripts/Game'
-import { PaddleState } from 'db://assets/Scripts/Enums/PaddleState'
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
 import { EndGameScreenData } from 'db://assets/Scripts/Components/EndGameScreenData'
+import { Bind } from '../Components/Keybinds'
 
 @ccclass('NetworkManager')
 export class NetworkManager {
@@ -30,6 +30,9 @@ export class NetworkManager {
 	private client!: Colyseus.Client
 	private LobbyRoom: Colyseus.Room
 	private GameRoom: Colyseus.Room
+	private startGameCallback: () => void
+	private objectsOnAddCallback: () => void
+	private objectsOnRemoveCallback: () => void
 
 	constructor() {
 		// Create a new NetworkManager node and add it to the scene
@@ -145,6 +148,7 @@ export class NetworkManager {
 			})
 
 			this.GameRoom.onMessage('status', (status) => {
+				console.log(status.title + ' : ' + status.message)
 				UIManager.inst.showStatus(status.title, status.message)
 			})
 
@@ -172,9 +176,22 @@ export class NetworkManager {
 			})
 
 			this.GameRoom.onMessage('loadMenu', () => {
+				if (director.getScene().name === 'Game') {
+					// Unbind all callbacks set after loading game scene
+					if (this.startGameCallback) {
+						this.startGameCallback()
+					}
+					if (this.objectsOnAddCallback) {
+						this.objectsOnAddCallback()
+					}
+					if (this.objectsOnRemoveCallback) {
+						this.objectsOnRemoveCallback()
+					}
+				}
 				director.loadScene('Menu', () => {
 					UIManager.inst.loadingScreen.hide()
 					UIManager.inst.switchUIState(UIState.RoomMenu)
+					AudioManager.inst.play('menu')
 				})
 			})
 
@@ -237,7 +254,24 @@ export class NetworkManager {
 			console.debug(`Successfully joined GameRoom (${this.GameRoom.id})`)
 			UIManager.inst.showStatus('You are now connected', 'Successfully joined game')
 		} catch (error) {
-			if (UIManager.inst.UIState === UIState.RoomMenu) {
+			if (director.getScene().name === 'Game') {
+				// Unbind all callbacks set after loading game scene
+				if (this.startGameCallback) {
+					this.startGameCallback()
+				}
+				if (this.objectsOnAddCallback) {
+					this.objectsOnAddCallback()
+				}
+				if (this.objectsOnRemoveCallback) {
+					this.objectsOnRemoveCallback()
+				}
+				director.loadScene('Menu', () => {
+					UIManager.inst.loadingScreen.hide()
+					UIManager.inst.switchUIState(UIState.PlayMenu)
+					AudioManager.inst.play('menu')
+				})
+			}
+			else if (UIManager.inst.UIState === UIState.RoomMenu) {
 				UIManager.inst.switchUIState(UIState.PlayMenu)
 			}
 			console.error(error)
@@ -245,6 +279,7 @@ export class NetworkManager {
 	}
 
 	loadGame() {
+		AudioManager.inst.stopMusic()
 		UIManager.inst.loadingScreen.setLoadingInfo('Initializing game')
 		const gameCanvasNode: Node = director.getScene().getChildByName('GameCanvas')
 		const gameCanvas: Canvas = gameCanvasNode.getComponent(Canvas)
@@ -257,7 +292,6 @@ export class NetworkManager {
 		UIManager.inst.loadingScreen.setLoadingInfo('Setting UI')
 		const selectedMap = GameManager.inst.maps.get(this.GameRoom.state.selectedMap)
 		GameManager.inst.game.setBackground(selectedMap.background)
-		AudioManager.inst.musicSource.loop = true
 		AudioManager.inst.musicSource.clip = selectedMap.music
 		const leftPlayer = this.GameRoom.state.players.get(this.GameRoom.state.leftPlayer)
 		const rightPlayer = this.GameRoom.state.players.get(this.GameRoom.state.rightPlayer)
@@ -267,17 +301,17 @@ export class NetworkManager {
 		this.GameRoom.send('clientReady')
 		UIManager.inst.loadingScreen.setLoadingInfo('Waiting for other players')
 
-		this.GameRoom.onMessage('startGame', () => {
+		this.startGameCallback = this.GameRoom.onMessage('startGame', () => {
 			UIManager.inst.loadingScreen.hide()
 			AudioManager.inst.musicSource.play()
 			GameManager.inst.game.showHUD()
 		})
 
-		this.GameRoom.state.objects.onAdd((object, key) => {
-			const worldObject = GameManager.inst.game.instantiateObject(object, key)
+		this.objectsOnAddCallback = this.GameRoom.state.objects.onAdd((object, key) => {
+			GameManager.inst.game.instantiateObject(object)
 		})
 		
-		this.GameRoom.state.objects.onRemove((object, key) => {
+		this.objectsOnRemoveCallback = this.GameRoom.state.objects.onRemove((object, key) => {
 			GameManager.inst.game.destroyObject(key)
 		})
 	}
@@ -338,8 +372,12 @@ export class NetworkManager {
 		return -1
 	}
 
-	movePaddle(paddleState: PaddleState) {
-		this.GameRoom.send('movePaddle', paddleState)
+	registerKeyDown(bind: Bind) {
+		this.GameRoom.send('keyDown', bind)
+	}
+
+	registerKeyUp(bind: Bind) {
+		this.GameRoom.send('keyUp', bind)
 	}
 
 	getEndGameScreenData(): EndGameScreenData {

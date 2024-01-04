@@ -374,7 +374,7 @@
     "_actualFontSize": 32,
     "_fontSize": 32,
     "_fontFamily": "Arial",
-    "_lineHeight": 32,
+    "_lineHeight": 50,
     "_overflow": 2,
     "_enableWrapText": true,
     "_font": {

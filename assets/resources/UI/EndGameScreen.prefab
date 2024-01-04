@@ -756,7 +756,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 131.67,
+      "width": 250,
       "height": 40
     },
     "_anchorPoint": {
@@ -798,8 +798,8 @@
     "_actualFontSize": 40,
     "_fontSize": 40,
     "_fontFamily": "Arial",
-    "_lineHeight": 40,
-    "_overflow": 0,
+    "_lineHeight": 50,
+    "_overflow": 2,
     "_enableWrapText": true,
     "_font": {
       "__uuid__": "baf7e9fe-00e6-4ac7-88c4-eb689e5acd84",

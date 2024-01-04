@@ -44,12 +44,21 @@ export class GameManager {
 		view.setResolutionPolicy(resolutionPolicy)
 	}
 
-	loadResources() {
-		resources.loadDir("game", function (err, assets) {
-			assets.forEach(function (asset) {
-				if (asset instanceof SpriteFrame) {
-					GameManager.inst.textureCache.set(asset.name, asset)
+	loadResources(): Promise<void> {
+		return new Promise((resolve, reject) => {
+			resources.loadDir("game", function (err, assets) {
+				if (err) {
+					reject(err)
+					return
 				}
+
+				assets.forEach(function (asset) {
+					if (asset instanceof SpriteFrame) {
+						GameManager.inst.textureCache.set(asset.name, asset)
+					}
+				})
+
+				resolve()
 			})
 		})
 	}

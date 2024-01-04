@@ -16,7 +16,7 @@ export class AudioManager {
     private _musicSource!: AudioSource
 	private _effectsSource!: AudioSource
 	private _UISource!: AudioSource
-	public UIClips: Map<string, AudioClip> = new Map<string, AudioClip>()
+	public clips: Map<string, AudioClip> = new Map<string, AudioClip>()
 
 
     constructor() {
@@ -40,6 +40,10 @@ export class AudioManager {
 		this._musicSource.volume = this.getMusicVolume
 		this._effectsSource.volume = this.getEffectsVolume
 		this._UISource.volume = this.getUIVolume
+
+		this._musicSource.loop = true
+		this._effectsSource.loop = false
+		this._UISource.loop = false
 	}
 	
 
@@ -58,18 +62,27 @@ export class AudioManager {
 	/**
 	 * Load every AudioClip inside resources/audio
 	*/
-	loadResources() {
-		resources.loadDir("audio", function (err, assets) {
-			assets.forEach(function (asset) {
-				if (asset instanceof AudioClip) {
-					AudioManager.inst.UIClips.set(asset.name, asset)
+	loadResources(): Promise<void> {
+		return new Promise((resolve, reject) => {
+			resources.loadDir("audio", function (err, assets) {
+				if (err) {
+					reject(err)
+					return
 				}
+
+				assets.forEach(function (asset) {
+					if (asset instanceof AudioClip) {
+						AudioManager.inst.clips.set(asset.name, asset)
+					}
+				})
+
+				resolve()
 			})
 		})
 	}
 
-	getUIClip(name: string) : AudioClip {
-		return this.UIClips.get(name)
+	getClip(name: string) : AudioClip {
+		return this.clips.get(name)
 	}
 
     /**
@@ -82,14 +95,12 @@ export class AudioManager {
             this._effectsSource.playOneShot(sound, 1)
         }
         else {
-            resources.load(sound, (err, clip: AudioClip) => {
-                if (err) {
-                    console.error(err)
-                }
-                else {
-                    this._effectsSource.playOneShot(clip)
-                }
-            })
+			const clip = this.getClip(sound)
+			if (clip) {
+				this._effectsSource.playOneShot(clip)
+			} else {
+				console.error(`Unknown AudioClip '${sound}'`)
+			}
         }
     }
 
@@ -103,7 +114,7 @@ export class AudioManager {
             this._UISource.playOneShot(sound, 1)
         }
         else {
-			const clip = this.getUIClip(sound)
+			const clip = this.getClip(sound)
 			if (clip) {
 				this._UISource.playOneShot(clip)
 			} else {
@@ -123,15 +134,13 @@ export class AudioManager {
             this._musicSource.play()
         }
         else {
-            resources.load(sound, (err, clip: AudioClip) => {
-                if (err) {
-                    console.error(err)
-                }
-                else {
-                    this._musicSource.clip = clip
-                    this._musicSource.play()
-                }
-            })
+			const clip = this.getClip(sound)
+			if (clip) {
+				this._musicSource.clip = clip
+            	this._musicSource.play()
+			} else {
+				console.error(`Unknown AudioClip '${sound}'`)
+			}
         }
     }
 

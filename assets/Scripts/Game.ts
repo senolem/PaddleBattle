@@ -1,5 +1,4 @@
 import { _decorator, Canvas, Component, EventKeyboard, find, game, Input, input, KeyCode, Label, lerp, Node, resources, Sprite, SpriteFrame, UITransform, Vec3 } from 'cc';
-import Colyseus from 'db://colyseus-sdk/colyseus.js'
 import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager';
 import { PaddleState } from 'db://assets/Scripts/Enums/PaddleState';
 import { ObjectType } from 'db://assets/Scripts/Enums/ObjectType';
@@ -12,7 +11,6 @@ const { ccclass, property } = _decorator;
 @ccclass('Game')
 export class Game extends Component {
 	// Game canvas, background, HUD and keybinds
-	public gameRoom: Colyseus.Room
 	private canvas: Canvas
 	private backgroundNode: Node
 	private background: Sprite
@@ -66,8 +64,6 @@ export class Game extends Component {
 		this.rightPlayerUsername = this.rightPlayerUsernameNode.getComponent(Label)
 		this.rightPlayerScoreNode = find('GameHUD/ScoreLayout/ScoreFrameLayout/ScoreValueLayout/ScoreRight', this.node)
 		this.rightPlayerScore = this.rightPlayerScoreNode.getComponent(Label)
-
-		this.gameRoom = NetworkManager.inst.getGameRoom
 	}
 
 	protected onEnable(): void {
@@ -81,12 +77,12 @@ export class Game extends Component {
 	}
 
 	protected update(dt: number): void {
-		if (this.gameRoom.state.gameState === GameState.Playing) {
+		if (NetworkManager.inst.getGameRoom.state.gameState === GameState.Playing) {
 			this.objects.forEach((object) => {
 				if (object.id !== this.paddleId) {
 					const position = object.node.position.clone()
-					position.x = lerp(position.x, object.state.position.x, 0.8)
-					position.y = lerp(position.y, object.state.position.y, 0.8)
+					position.x = lerp(position.x, object.state.position.x, 0.95)
+					position.y = lerp(position.y, object.state.position.y, 0.95)
 					object.node.position = position
 				} else {
 					object.node.position = object.state.position
@@ -95,7 +91,7 @@ export class Game extends Component {
 		}
 	}
 
-	instantiateObject(object, key: string): WorldObject{
+	instantiateObject(object): WorldObject{
 		if (!this.objects) {
 			this.objects = new Map<string, WorldObject>()
 		}
@@ -121,14 +117,14 @@ export class Game extends Component {
 
 			case ObjectType.LeftPaddle:
 				this.leftPaddle = worldObject
-				if (this.gameRoom.sessionId === this.gameRoom.state.leftPlayer) {
+				if (NetworkManager.inst.getGameRoom.sessionId === NetworkManager.inst.getGameRoom.state.leftPlayer) {
 					this.paddleId = worldObject.id
 				}
 				break
 
 			case ObjectType.RightPaddle:
 				this.rightPaddle = worldObject
-				if (this.gameRoom.sessionId === this.gameRoom.state.rightPlayer) {
+				if (NetworkManager.inst.getGameRoom.sessionId === NetworkManager.inst.getGameRoom.state.rightPlayer) {
 					this.paddleId = worldObject.id
 				}
 				break
@@ -150,6 +146,10 @@ export class Game extends Component {
 			}
 			this.objects.delete(key)
 		}
+		const existingNode = this.node.getChildByName(key)
+		if (existingNode) {
+			existingNode.destroy()
+		}
 	}
 
 	updateKeybinds(keybinds: Map<Bind, KeyCode>) {
@@ -159,11 +159,15 @@ export class Game extends Component {
 	onKeyDown(event: EventKeyboard) {
 		switch(event.keyCode) {
 			case this.keybinds.get(Bind.Upward):
-				NetworkManager.inst.movePaddle(PaddleState.Up)
+				NetworkManager.inst.registerKeyDown(Bind.Upward)
 				break
 
 			case this.keybinds.get(Bind.Downward):
-				NetworkManager.inst.movePaddle(PaddleState.Down)
+				NetworkManager.inst.registerKeyDown(Bind.Downward)
+				break
+
+			case this.keybinds.get(Bind.Powerup):
+				NetworkManager.inst.registerKeyDown(Bind.Powerup)
 				break
 		}
 	}
@@ -171,11 +175,15 @@ export class Game extends Component {
 	onKeyUp(event: EventKeyboard) {
 		switch(event.keyCode) {
 			case this.keybinds.get(Bind.Upward):
-				NetworkManager.inst.movePaddle(PaddleState.Stop)
+				NetworkManager.inst.registerKeyUp(Bind.Upward)
 				break
 
 			case this.keybinds.get(Bind.Downward):
-				NetworkManager.inst.movePaddle(PaddleState.Stop)
+				NetworkManager.inst.registerKeyUp(Bind.Downward)
+				break
+
+			case this.keybinds.get(Bind.Powerup):
+				NetworkManager.inst.registerKeyUp(Bind.Powerup)
 				break
 		}
 	}
