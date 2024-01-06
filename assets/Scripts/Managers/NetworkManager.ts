@@ -236,13 +236,9 @@ export class NetworkManager {
 				})
 
 				player.listen('score', (value) => {
-					if (GameManager.inst.game) {
-						if (this.GameRoom.state.leftPlayer === key) {
-							GameManager.inst.game.setLeftPlayerScore(value)
-						} else if (this.GameRoom.state.rightPlayer === key) {
-							GameManager.inst.game.setRightPlayerScore(value)
-						}
-					}
+					const leftPlayer = this.GameRoom.state.players.get(this.GameRoom.state.leftPlayer)
+					const rightPlayer = this.GameRoom.state.players.get(this.GameRoom.state.rightPlayer)
+					GameManager.inst.game.showScores(leftPlayer.score, rightPlayer.score)
 				})
 			})
 
@@ -297,7 +293,7 @@ export class NetworkManager {
 		const rightPlayer = this.GameRoom.state.players.get(this.GameRoom.state.rightPlayer)
 		GameManager.inst.game.setLeftPlayer(GameManager.inst.avatarCache.get(leftPlayer.avatarUrl), leftPlayer.username)
 		GameManager.inst.game.setRightPlayer(GameManager.inst.avatarCache.get(rightPlayer.avatarUrl), rightPlayer.username)
-		GameManager.inst.game.setScores(rightPlayer.score, rightPlayer.score)
+		GameManager.inst.game.setScores(leftPlayer.score, rightPlayer.score)
 		this.GameRoom.send('clientReady')
 		UIManager.inst.loadingScreen.setLoadingInfo('Waiting for other players')
 
@@ -305,6 +301,7 @@ export class NetworkManager {
 			UIManager.inst.loadingScreen.hide()
 			AudioManager.inst.musicSource.play()
 			GameManager.inst.game.showHUD()
+			GameManager.inst.game.showScores(leftPlayer.score, rightPlayer.score)
 		})
 
 		this.objectsOnAddCallback = this.GameRoom.state.objects.onAdd((object, key) => {

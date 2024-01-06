@@ -1,11 +1,10 @@
-import { _decorator, Canvas, Component, EventKeyboard, find, game, Input, input, KeyCode, Label, lerp, Node, resources, Sprite, SpriteFrame, UITransform, Vec3 } from 'cc';
+import { _decorator, Canvas, Component, EventKeyboard, find, Input, input, KeyCode, Label, lerp, Node, Sprite, SpriteFrame, AnimationComponent } from 'cc';
 import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager';
-import { PaddleState } from 'db://assets/Scripts/Enums/PaddleState';
 import { ObjectType } from 'db://assets/Scripts/Enums/ObjectType';
 import { WorldObject } from 'db://assets/Scripts/Components/WorldObject';
 import { Bind } from 'db://assets/Scripts/Components/Keybinds';
 import { GameState } from './Enums/GameState';
-import { GameManager } from './Managers/GameManager';
+import { AudioManager } from './Managers/AudioManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('Game')
@@ -18,6 +17,10 @@ export class Game extends Component {
 	private keybinds: Map<Bind, KeyCode> = new Map<Bind, KeyCode>()
 	private paddleId: string
 
+	// Score frame
+	private scoreFrameNode: Node
+	private scoreFrameAnimation: AnimationComponent
+
 	// Left Player UI
 	private leftPlayerAvatarNode: Node
 	private leftPlayerAvatar: Sprite
@@ -25,6 +28,7 @@ export class Game extends Component {
 	private leftPlayerUsername: Label
 	private leftPlayerScoreNode: Node
 	private leftPlayerScore: Label
+	private leftPlayerScoreAnimation: AnimationComponent
 
 	// Right Player UI
 	private rightPlayerAvatarNode: Node
@@ -33,6 +37,7 @@ export class Game extends Component {
 	private rightPlayerUsername: Label
 	private rightPlayerScoreNode: Node
 	private rightPlayerScore: Label
+	private rightPlayerScoreAnimation: AnimationComponent
 
 	// Objects
 	public topWall: WorldObject
@@ -44,6 +49,10 @@ export class Game extends Component {
 	public ball: WorldObject
 	public objects: Map<string, WorldObject>
 
+	// Previous score
+	private leftScore: number
+	private rightScore: number
+
 	protected onLoad(): void {
 		this.canvas = this.node.getComponent(Canvas)
 		this.backgroundNode = this.node.getChildByName('GameBackground')
@@ -51,19 +60,27 @@ export class Game extends Component {
 		this.hud = this.node.getChildByName('GameHUD')
 		this.hideHUD()
 
-		this.leftPlayerAvatarNode = find('GameHUD/ScoreLayout/ScoreFrameLayout/LeftPlayerLayout/Avatar', this.node)
+		this.scoreFrameNode = find('GameHUD/ScoreLayout/ScoreFrameLayout', this.node)
+		this.scoreFrameAnimation = this.scoreFrameNode.getComponent(AnimationComponent)
+		this.leftPlayerAvatarNode = find('LeftPlayerLayout/Avatar', this.scoreFrameNode)
+		this.leftPlayerAvatarNode = find('LeftPlayerLayout/Avatar', this.scoreFrameNode)
 		this.leftPlayerAvatar = this.leftPlayerAvatarNode.getComponent(Sprite)
-		this.leftPlayerUsernameNode = find('GameHUD/ScoreLayout/ScoreFrameLayout/LeftPlayerLayout/UsernameLayout/Username', this.node)
+		this.leftPlayerUsernameNode = find('LeftPlayerLayout/UsernameLayout/Username', this.scoreFrameNode)
 		this.leftPlayerUsername = this.leftPlayerUsernameNode.getComponent(Label)
-		this.leftPlayerScoreNode = find('GameHUD/ScoreLayout/ScoreFrameLayout/ScoreValueLayout/ScoreLeft', this.node)
+		this.leftPlayerScoreNode = find('ScoreValueLayout/ScoreLeft', this.scoreFrameNode)
 		this.leftPlayerScore = this.leftPlayerScoreNode.getComponent(Label)
+		this.leftPlayerScoreAnimation = this.leftPlayerScoreNode.getComponent(AnimationComponent)
 
-		this.rightPlayerAvatarNode = find('GameHUD/ScoreLayout/ScoreFrameLayout/RightPlayerLayout/Avatar', this.node)
+		this.rightPlayerAvatarNode = find('RightPlayerLayout/Avatar', this.scoreFrameNode)
 		this.rightPlayerAvatar = this.rightPlayerAvatarNode.getComponent(Sprite)
-		this.rightPlayerUsernameNode = find('GameHUD/ScoreLayout/ScoreFrameLayout/RightPlayerLayout/UsernameLayout/Username', this.node)
+		this.rightPlayerUsernameNode = find('RightPlayerLayout/UsernameLayout/Username', this.scoreFrameNode)
 		this.rightPlayerUsername = this.rightPlayerUsernameNode.getComponent(Label)
-		this.rightPlayerScoreNode = find('GameHUD/ScoreLayout/ScoreFrameLayout/ScoreValueLayout/ScoreRight', this.node)
+		this.rightPlayerScoreNode = find('ScoreValueLayout/ScoreRight', this.scoreFrameNode)
 		this.rightPlayerScore = this.rightPlayerScoreNode.getComponent(Label)
+		this.rightPlayerScoreAnimation = this.rightPlayerScoreNode.getComponent(AnimationComponent)
+
+		this.leftScore = 0
+		this.rightScore = 0
 	}
 
 	protected onEnable(): void {
@@ -77,7 +94,7 @@ export class Game extends Component {
 	}
 
 	protected update(dt: number): void {
-		if (NetworkManager.inst.getGameRoom.state.gameState === GameState.Playing) {
+		if (NetworkManager.inst && NetworkManager.inst.getGameRoom && NetworkManager.inst.getGameRoom.state.gameState === GameState.Playing) {
 			this.objects.forEach((object) => {
 				if (object.id !== this.paddleId) {
 					const position = object.node.position.clone()
@@ -214,19 +231,22 @@ export class Game extends Component {
 		}
 	}
 
-	setLeftPlayerScore(leftPlayerScore: number) {
-		if (this.leftPlayerAvatar && leftPlayerScore) {
-			this.leftPlayerScore.string = String(leftPlayerScore)
+	updateLeftScore() {
+		if (this.leftPlayerScore) {
+			this.leftPlayerScore.string = String(this.leftScore)
 		}
 	}
 
-	setRightPlayerScore(rightPlayerScore: number) {
-		if (this.rightPlayerScore && rightPlayerScore) {
-			this.rightPlayerScore.string = String(rightPlayerScore)
+	updateRightScore() {
+		if (this.rightPlayerScore) {
+			this.rightPlayerScore.string = String(this.rightScore)
 		}
 	}
 
 	setScores(leftPlayerScore: number, rightPlayerScore: number) {
+		this.leftScore = leftPlayerScore
+		this.rightScore = rightPlayerScore
+
 		if (this.leftPlayerAvatar && leftPlayerScore) {
 			this.leftPlayerScore.string = String(leftPlayerScore)
 		}
@@ -234,6 +254,37 @@ export class Game extends Component {
 		if (this.rightPlayerScore && rightPlayerScore) {
 			this.rightPlayerScore.string = String(rightPlayerScore)
 		}
+	}
+
+	showScores(leftScore: number, rightScore: number) {
+		if (this.scoreFrameAnimation) {
+			this.scoreFrameAnimation.play('scoresSlideIn')
+		}
+
+		if (leftScore != this.leftScore) {
+			this.leftScore = leftScore
+			setTimeout(() => {
+				if (this.leftPlayerScoreAnimation) {
+					AudioManager.inst.playOneShotUI('score')
+					this.leftPlayerScoreAnimation.play('scoresLeftBlink')
+				}
+			}, 150)
+		}
+
+		if (rightScore != this.rightScore) {
+			this.rightScore = rightScore
+			setTimeout(() => {
+				if (this.rightPlayerScoreAnimation) {
+					AudioManager.inst.playOneShotUI('score')
+					this.rightPlayerScoreAnimation.play('scoresRightBlink')
+				}
+			}, 150)
+		}
+		setTimeout(() => {
+			if (this.scoreFrameAnimation) {
+				this.scoreFrameAnimation.play('scoresSlideOut')
+			}
+		}, 1500)
 	}
 
 	showHUD() {
