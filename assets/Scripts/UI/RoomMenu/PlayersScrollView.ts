@@ -16,7 +16,7 @@ export class PlayersScrollView extends Component {
 		this.playerItemPrefab = UIManager.inst.prefabs.get('PlayerItem')
 	}
 
-	async addPlayer(id: number, username: string, avatarUrl: string, isReady: boolean): Promise<void> {
+	async addPlayer(id: number, username: string, xp: number, avatarUrl: string, isReady: boolean): Promise<void> {
 		const existingNode = this.players.get(id)
 		if (existingNode) {
 			console.error(`${username} already exists`)
@@ -39,16 +39,16 @@ export class PlayersScrollView extends Component {
 				avatarSpriteFrame.texture = avatarTexture
 				GameManager.inst.avatarCache.set(avatarUrl, avatarSpriteFrame)
 
-				playerItem.init(username, avatarSpriteFrame, isReady)
+				playerItem.init(username, avatarSpriteFrame, xp, isReady)
 			}
 		});
 	}
 
-	updatePlayer(id: number, isReady: boolean): void {
+	updatePlayer(id: number, username?: string, avatar?: SpriteFrame, xp?: number, ready?: boolean): void {
 		const existingNode = this.players.get(id)
 		if (existingNode) {
 			const playerItem = existingNode.getComponent(PlayerItem)
-			playerItem.setReady(isReady)
+			playerItem.updatePlayer(username, avatar, xp, ready)
 		} else {
 			console.error(`No player found for id ${id}`)
 		}

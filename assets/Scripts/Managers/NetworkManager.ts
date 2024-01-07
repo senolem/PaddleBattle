@@ -229,10 +229,18 @@ export class NetworkManager {
 			})
 
 			this.GameRoom.state.players.onAdd(async (player, key) => {
-				await UIManager.inst.playersScrollView.addPlayer(player.id, player.username, player.avatarUrl, player.ready)
+				await UIManager.inst.playersScrollView.addPlayer(player.id, player.username, player.xp, player.avatarUrl, player.ready)
+
+				player.listen('username', (value) => {
+					UIManager.inst.playersScrollView.updatePlayer(player.id, value, null, null, null)
+				})
 
 				player.listen('ready', (value) => {
-					UIManager.inst.playersScrollView.updatePlayer(player.id, value)
+					UIManager.inst.playersScrollView.updatePlayer(player.id, null, null, null, value)
+				})
+
+				player.listen('xp', (value) => {
+					UIManager.inst.playersScrollView.updatePlayer(player.id, null, null, value, null)
 				})
 
 				player.listen('score', (value) => {
