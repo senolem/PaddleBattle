@@ -20,6 +20,8 @@ export class Game extends Component {
 	// Score frame
 	private scoreFrameNode: Node
 	private scoreFrameAnimation: AnimationComponent
+	private scoreVisible: boolean = false
+	private scoreSlideOutTimeout
 
 	// Left Player UI
 	private leftPlayerAvatarNode: Node
@@ -257,8 +259,9 @@ export class Game extends Component {
 	}
 
 	showScores(leftScore: number, rightScore: number) {
-		if (this.scoreFrameAnimation) {
+		if (this.scoreFrameAnimation && !this.scoreVisible && !this.scoreFrameAnimation.getState('scoresSlideIn').isPlaying) {
 			this.scoreFrameAnimation.play('scoresSlideIn')
+			this.scoreVisible = true
 		}
 
 		if (leftScore != this.leftScore) {
@@ -280,9 +283,15 @@ export class Game extends Component {
 				}
 			}, 150)
 		}
-		setTimeout(() => {
+
+		if (this.scoreSlideOutTimeout) {
+			clearTimeout(this.scoreSlideOutTimeout);
+		}
+
+		this.scoreSlideOutTimeout = setTimeout(() => {
 			if (this.scoreFrameAnimation) {
 				this.scoreFrameAnimation.play('scoresSlideOut')
+				this.scoreVisible = false
 			}
 		}, 1500)
 	}
