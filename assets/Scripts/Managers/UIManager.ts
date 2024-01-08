@@ -14,8 +14,9 @@ import { StatusBox } from 'db://assets/Scripts/UI/Notification/StatusBox'
 import { PressAnyKeyScreen } from 'db://assets/Scripts/UI/PressAnyKeyScreen/PressAnyKeyScreen'
 import { Bind, KeybindCallback } from 'db://assets/Scripts/Components/Keybinds'
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
-
-const view = View.instance
+import { ReadyButton } from 'db://assets/Scripts/UI/RoomMenu/ReadyButton'
+import { LeaveRoomButton } from 'db://assets/Scripts/UI/RoomMenu/LeaveRoomButton'
+import { ScrollingParallax } from 'db://assets/Scripts/UI/Background/ScrollingParallax'
 
 @ccclass('UIManager')
 export class UIManager {
@@ -32,6 +33,7 @@ export class UIManager {
 	public prefabs: Map<string, Prefab> = new Map<string, Prefab>()
 	public UIState: UIState
 	public background: Node
+	public backgroundScrollingParallax: ScrollingParallax
 	public menu: Node
 	public playMenu: Node
 	public settingsMenu: Node
@@ -53,6 +55,10 @@ export class UIManager {
 	public notReadyIcon: SpriteFrame
 	public loadingScreen: LoadingScreen
 	public pressAnyKeyScreen: PressAnyKeyScreen
+	public readyButtonNode: Node
+	public readyButton: ReadyButton
+	public leaveRoomButtonNode: Node
+	public leaveRoomButton: LeaveRoomButton
 
 	constructor() {
 		// Create a new UIManager node and add it to the scene
@@ -166,6 +172,7 @@ export class UIManager {
 		GameManager.inst.cameraNode = canvas.node.getChildByName('Camera')
 		GameManager.inst.camera = GameManager.inst.cameraNode.getComponent(Camera)
 		this.background = canvas.node.getChildByName('Background')
+		this.backgroundScrollingParallax = this.background.getComponent(ScrollingParallax)
 		this.menu = canvas.node.getChildByName('Menu')
 		this.playMenu = canvas.node.getChildByName('PlayMenu')
 		this.roomMenu = canvas.node.getChildByName('RoomMenu')
@@ -176,8 +183,12 @@ export class UIManager {
 		this.notifications = canvas.node.getChildByName('Notifications')
 		this.status = canvas.node.getChildByName('Status')
 		this.countdownNode = this.roomMenu.getChildByName('CountdownLayout')
-		this.countdownValueNode = find('CountdownValue', this.countdownNode)
+		this.countdownValueNode = this.countdownNode.getChildByName('CountdownValue')
 		this.countdownValueLabel = this.countdownValueNode.getComponent(Label)
+		this.readyButtonNode = find('RoomLayout/RoomPlayersLayout/ReadyButton', this.roomMenu)
+		this.readyButton = this.readyButtonNode.getComponent(ReadyButton)
+		this.leaveRoomButtonNode = find('RoomLayout/RoomPlayersLayout/LeaveRoomButton', this.roomMenu)
+		this.leaveRoomButton = this.leaveRoomButtonNode.getComponent(LeaveRoomButton)
 		this.mapsScrollViewNode = find('RoomLayout/RoomLayout/MapsScrollView', this.roomMenu)
 		this.mapsScrollView = this.mapsScrollViewNode.getComponent(MapsScrollView)
 		this.playersScrollViewNode = find('RoomLayout/RoomPlayersLayout/PlayersScrollView', this.roomMenu)

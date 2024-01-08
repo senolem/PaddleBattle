@@ -33,4 +33,8 @@ export class LeaveRoomButton extends Component {
 		this.node.off(Button.EventType.CLICK, this.clickCallback)
 		this.node.off(Node.EventType.MOUSE_ENTER, this.hoverCallback)
 	}
+
+	setInteractable(interactable: boolean) {
+		this.button.interactable = interactable
+	}
 }

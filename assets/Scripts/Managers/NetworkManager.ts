@@ -189,6 +189,8 @@ export class NetworkManager {
 					}
 				}
 				director.loadScene('Menu', () => {
+					UIManager.inst.readyButton.setInteractable(true)
+					UIManager.inst.leaveRoomButton.setInteractable(true)
 					UIManager.inst.loadingScreen.hide()
 					UIManager.inst.switchUIState(UIState.RoomMenu)
 					AudioManager.inst.play('menu')
@@ -214,6 +216,8 @@ export class NetworkManager {
 
 			this.GameRoom.state.listen('countdownStarted', (value) => {
 				if (value) {
+					UIManager.inst.readyButton.setInteractable(false)
+					UIManager.inst.leaveRoomButton.setInteractable(false)
 					UIManager.inst.enableCountdown()
 				} else {
 					UIManager.inst.disableCountdown()
@@ -270,6 +274,8 @@ export class NetworkManager {
 					this.objectsOnRemoveCallback()
 				}
 				director.loadScene('Menu', () => {
+					UIManager.inst.readyButton.setInteractable(true)
+					UIManager.inst.leaveRoomButton.setInteractable(true)
 					UIManager.inst.loadingScreen.hide()
 					UIManager.inst.switchUIState(UIState.PlayMenu)
 					AudioManager.inst.play('menu')

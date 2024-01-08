@@ -1,4 +1,4 @@
-import { _decorator, Component, Graphics, lerp, Material, Node, Sprite, Vec2 } from 'cc'
+import { _decorator, Component, Graphics, lerp, Material, math, Node, screen, Sprite, Vec2, view } from 'cc'
 const { ccclass, property } = _decorator
 
 @ccclass('ScrollingParallax')
@@ -20,13 +20,13 @@ export class ScrollingParallax extends Component {
 	private clouds5Material: Material
 	private graphicsMaterial: Material
 
-	private skySpeed: number = 0
-	private clouds1Speed: number = 0.0075
-	private clouds2Speed: number = 0.0155
-	private mountainsSpeed: number = 0.0205
-	private clouds3Speed: number = 0.025
-	private clouds4Speed: number = 0.05
-	private clouds5Speed: number = 0.125
+    private skySpeed: number = 0
+    private clouds1Speed: number = 0.006
+    private clouds2Speed: number = 0.0160
+    private mountainsSpeed: number = 0.0200
+    private clouds3Speed: number = 0.028
+    private clouds4Speed: number = 0.04
+    private clouds5Speed: number = 0.120
 
 	private skyOffset: Vec2 = new Vec2(0, 0)
 	private clouds1Offset: Vec2 = new Vec2(0, 0)
@@ -36,6 +36,17 @@ export class ScrollingParallax extends Component {
 	private clouds4Offset: Vec2 = new Vec2(0, 0)
 	private clouds5Offset: Vec2 = new Vec2(0, 0)
 
+	private skyAccumulatedOffset: Vec2 = new Vec2(0, 0)
+	private clouds1AccumulatedOffset: Vec2 = new Vec2(0, 0)
+	private clouds2AccumulatedOffset: Vec2 = new Vec2(0, 0)
+	private mountainsAccumulatedOffset: Vec2 = new Vec2(0, 0)
+	private clouds3AccumulatedOffset: Vec2 = new Vec2(0, 0)
+	private clouds4AccumulatedOffset: Vec2 = new Vec2(0, 0)
+	private clouds5AccumulatedOffset: Vec2 = new Vec2(0, 0)
+
+	private canvasSize: math.Size
+	private designSize: math.Size
+
 	protected onEnable(): void {
 		this.skyOffset = new Vec2(0, 0)
 		this.clouds1Offset =  new Vec2(0, 0)
@@ -44,6 +55,13 @@ export class ScrollingParallax extends Component {
 		this.clouds3Offset =  new Vec2(0, 0)
 		this.clouds4Offset =  new Vec2(0, 0)
 		this.clouds5Offset =  new Vec2(0, 0)
+		this.updateScreenSize()
+
+		window.addEventListener('resize', this.updateScreenSize)
+	}
+
+	protected onDisable(): void {
+		window.removeEventListener('resize', this.updateScreenSize)
 	}
 
 	protected onLoad(): void {
@@ -65,20 +83,33 @@ export class ScrollingParallax extends Component {
 	}
 
 	protected update(dt: number): void {
-		this.updateOffset(this.skyMaterial, this.skySpeed, this.skyOffset, dt)
-		this.updateOffset(this.clouds1Material, this.clouds1Speed, this.clouds1Offset, dt)
-		this.updateOffset(this.clouds2Material, this.clouds2Speed, this.clouds2Offset, dt)
-		this.updateOffset(this.mountainsMaterial, this.mountainsSpeed, this.mountainsOffset, dt)
-		this.updateOffset(this.clouds3Material, this.clouds3Speed, this.clouds3Offset, dt)
-		this.updateOffset(this.clouds4Material, this.clouds4Speed, this.clouds4Offset, dt)
-		this.updateOffset(this.clouds5Material, this.clouds5Speed, this.clouds5Offset, dt)
+		this.updateOffset(this.skyMaterial, this.skySpeed, this.skyOffset, this.skyAccumulatedOffset, dt)
+		this.updateOffset(this.clouds1Material, this.clouds1Speed, this.clouds1Offset, this.clouds1AccumulatedOffset, dt)
+		this.updateOffset(this.clouds2Material, this.clouds2Speed, this.clouds2Offset, this.clouds2AccumulatedOffset, dt)
+		this.updateOffset(this.mountainsMaterial, this.mountainsSpeed, this.mountainsOffset, this.mountainsAccumulatedOffset, dt)
+		this.updateOffset(this.clouds3Material, this.clouds3Speed, this.clouds3Offset, this.clouds3AccumulatedOffset, dt)
+		this.updateOffset(this.clouds4Material, this.clouds4Speed, this.clouds4Offset, this.clouds4AccumulatedOffset, dt)
+		this.updateOffset(this.clouds5Material, this.clouds5Speed, this.clouds5Offset, this.clouds5AccumulatedOffset, dt)
 	}
 
-	updateOffset(material: Material, speed: number, offset: Vec2, dt: number) {
-		offset.x += dt * speed;
-		if (offset.x >= 1.00) {
-			offset.x = 0
+	updateOffset(material: Material, speed: number, offset: Vec2, accumulatedOffset: Vec2, dt: number) {
+		const pixelsPerSecond = speed * this.canvasSize.width;
+	
+		const pixelsThisFrame = pixelsPerSecond * dt;
+	
+		accumulatedOffset.x += pixelsThisFrame;
+	
+		if (Math.abs(accumulatedOffset.x) >= 1) {
+			const offsetChange = Math.floor(accumulatedOffset.x);
+			accumulatedOffset.x -= offsetChange;
+			offset.x += offsetChange / this.canvasSize.width;
+
+			material.setProperty('offset', offset);
 		}
-		material.setProperty('offset', offset)
+	}	
+
+	updateScreenSize = () => {
+		this.canvasSize = screen.windowSize
+		this.designSize = view.getDesignResolutionSize()
 	}
 }
