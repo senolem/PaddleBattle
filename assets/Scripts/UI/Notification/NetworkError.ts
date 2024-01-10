@@ -11,6 +11,7 @@ export class NetworkError extends Component {
     private reconnectButton: Button
 	private clickCallback: any
 	private hoverCallback: any
+	private disconnectedFromGame: boolean
 
     protected onLoad(): void {
 		this.reconnectNode = find('NotificationLayout/ButtonsLayout/ReconnectButton', this.node)
@@ -21,7 +22,7 @@ export class NetworkError extends Component {
         // Click event
 		this.clickCallback = (event) => {
 			AudioManager.inst.playOneShotUI('button_click')
-			NetworkManager.inst.reconnect()
+			NetworkManager.inst.reconnect(this.disconnectedFromGame)
             this.node.destroy()
 		}
 
@@ -41,7 +42,8 @@ export class NetworkError extends Component {
 		this.reconnectNode.off(Node.EventType.MOUSE_ENTER, this.hoverCallback)
 	}
 
-	init(text: string): void {
+	init(text: string, disconnectedFromGame: boolean = false): void {
+		this.disconnectedFromGame = disconnectedFromGame
 		this.textLabel.string = text
 		AudioManager.inst.playOneShotUI('error')
     }

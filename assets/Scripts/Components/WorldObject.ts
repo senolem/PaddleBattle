@@ -12,27 +12,34 @@ export class WorldObject {
 
 	constructor(state: any, id: string, parent: Node) {
 		this.id = id
-		this.node = new Node()
-		this.node.parent = parent
-		this.node.name = this.id
-		this.node.layer = 1 << 18
 		this.state = state
-		//switch (bodyType) {
-		//	case BodyType.Static:
-		//		this.node.mobility = MobilityMode.Static
-		//		break
-		//	
-		//	case BodyType.Dynamic:
-		//		this.node.mobility = MobilityMode.Movable
-		//		break
-//
-		//	case BodyType.Kinematic:
-		//		this.node.mobility = MobilityMode.Stationary
-		//		break
-		//}
-		this.transform = this.node.addComponent(UITransform)
-		this.sprite = this.node.addComponent(Sprite)
 
+		const existingNode = parent.getChildByName(this.id)
+		if (!existingNode) {
+			this.node = new Node()
+			this.node.parent = parent
+			this.node.name = this.id
+			this.node.layer = 1 << 18
+			//switch (bodyType) {
+			//	case BodyType.Static:
+			//		this.node.mobility = MobilityMode.Static
+			//		break
+			//	
+			//	case BodyType.Dynamic:
+			//		this.node.mobility = MobilityMode.Movable
+			//		break
+			//
+			//	case BodyType.Kinematic:
+			//		this.node.mobility = MobilityMode.Stationary
+			//		break
+			//}
+			this.transform = this.node.addComponent(UITransform)
+			this.sprite = this.node.addComponent(Sprite)
+		} else {
+			this.node = existingNode
+			this.transform = this.node.getComponent(UITransform)
+			this.sprite = this.node.getComponent(Sprite)
+		}
 		this.node.position = state.position
 		this.transform.width = state.size.x
 		this.transform.height = state.size.y
@@ -42,10 +49,6 @@ export class WorldObject {
 
 	move(position: Vec3) {
 		this.node.position = position
-	}
-
-	linear(p0: number, p1: number, t: number): number {
-		return p0 + (p1 - p0) * t;
 	}
 
 	destroy() {

@@ -19,7 +19,8 @@ export class PlayersScrollView extends Component {
 	async addPlayer(id: number, username: string, xp: number, avatarUrl: string, isReady: boolean): Promise<void> {
 		const existingNode = this.players.get(id)
 		if (existingNode) {
-			console.error(`${username} already exists`)
+			console.log(`${username} already exists`)
+			return
 		}
 
 		this.players.set(id, null)

@@ -164,10 +164,11 @@ export class Game extends Component {
 				gameObject.destroy()
 			}
 			this.objects.delete(key)
-		}
-		const existingNode = this.node.getChildByName(key)
-		if (existingNode) {
-			existingNode.destroy()
+		} else {
+			const existingNode = this.node.getChildByName(key)
+			if (existingNode) {
+				existingNode.destroy()
+			}
 		}
 	}
 

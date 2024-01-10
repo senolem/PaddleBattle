@@ -213,7 +213,7 @@ export class UIManager {
 		notification.init(text)
 	}
 
-	showNetworkError(text: string) {
+	showNetworkError(text: string, disconnectedFromGame: boolean = false) {
 		const existingError = this.notifications.getChildByName('NetworkError')
 		if (existingError) {
 			return
@@ -223,7 +223,7 @@ export class UIManager {
 		networkErrorNode.parent = this.notifications
 
 		const networkError = networkErrorNode.getComponent(NetworkError)
-		networkError.init(text)
+		networkError.init(text, disconnectedFromGame)
 	}
 
 	showEndGameScreen() {
