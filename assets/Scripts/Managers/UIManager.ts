@@ -17,6 +17,7 @@ import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
 import { ReadyButton } from 'db://assets/Scripts/UI/RoomMenu/ReadyButton'
 import { LeaveRoomButton } from 'db://assets/Scripts/UI/RoomMenu/LeaveRoomButton'
 import { ScrollingParallax } from 'db://assets/Scripts/UI/Background/ScrollingParallax'
+import { EndGameScreenData } from 'db://assets/Scripts/Components/EndGameScreenData'
 
 @ccclass('UIManager')
 export class UIManager {
@@ -226,11 +227,11 @@ export class UIManager {
 		networkError.init(text, disconnectedFromGame)
 	}
 
-	showEndGameScreen() {
+	showEndGameScreen(data: EndGameScreenData) {
 		const endGameScreenNode = instantiate(this.prefabs.get('EndGameScreen'))
 		endGameScreenNode.parent = this.notifications
 		const endGame = endGameScreenNode.getComponent(EndGameScreen)
-		endGame.init()
+		endGame.init(data)
 	}
 
 	showStatus(title: string, message: string) {

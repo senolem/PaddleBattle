@@ -4,9 +4,9 @@ const { ccclass } = _decorator
 @ccclass('EndGameScreenData')
 export class EndGameScreenData {
 	username: string
-	avatar: SpriteFrame
+	avatarUrl: string
 	leftPlayerScore: number
 	rightPlayerScore: number
-	title: string
-	result: number
+	winner: number
+	loser: number
 }

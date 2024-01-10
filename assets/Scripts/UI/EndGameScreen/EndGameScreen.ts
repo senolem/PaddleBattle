@@ -1,7 +1,9 @@
-import { _decorator, Button, Component, find, Label, Node, Sprite } from 'cc';
-import { AudioManager } from '../../Managers/AudioManager';
-import { NetworkManager } from '../../Managers/NetworkManager';
-const { ccclass, property } = _decorator;
+import { _decorator, Button, Component, find, Label, Node, Sprite } from 'cc'
+import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
+import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager'
+import { EndGameScreenData } from 'db://assets/Scripts/Components/EndGameScreenData'
+import { GameManager } from '../../Managers/GameManager'
+const { ccclass, property } = _decorator
 
 @ccclass('EndGameScreen')
 export class EndGameScreen extends Component {
@@ -52,18 +54,30 @@ export class EndGameScreen extends Component {
 		this.closeNode.off(Node.EventType.MOUSE_ENTER, this.closeHoverCallback)
 	}
 
-    init(): void {
-		const data = NetworkManager.inst.getEndGameScreenData()
-		this.title.string = data.title
-		this.username.string = data.username
-		this.avatar.spriteFrame = data.avatar
-		this.scores.string = `${data.leftPlayerScore} - ${data.rightPlayerScore}`
-		if (data.result == 0) {
+    init(data: EndGameScreenData): void {
+		let title: string
+		const myself: string = NetworkManager.inst.getGameRoom.sessionId
+		const myselfId: number = NetworkManager.inst.getGameRoom.state.players.get(myself).id
+
+		if (!data.winner) {
+			title = 'DRAW'
 			AudioManager.inst.playOneShotUI('draw')
-		} else if (data.result == 1) {
-			AudioManager.inst.playOneShotUI('win')
-		} else if (data.result == 2) {
-			AudioManager.inst.playOneShotUI('lose')
+		} else {
+			if (myselfId != data.winner && myselfId != data.loser) {
+				title = 'GAME ENDED'
+				AudioManager.inst.playOneShotUI('win')
+			} else if (data.winner === myselfId) {
+				title = 'YOU WON !'
+				AudioManager.inst.playOneShotUI('win')
+			} else {
+				title = 'YOU LOSE !'
+				AudioManager.inst.playOneShotUI('lose')
+			}
 		}
+
+		this.title.string = title
+		this.username.string = data.username
+		this.avatar.spriteFrame = GameManager.inst.avatarCache.get(data.avatarUrl)
+		this.scores.string = `${data.leftPlayerScore} - ${data.rightPlayerScore}`
     }
 }

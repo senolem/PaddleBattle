@@ -8,9 +8,9 @@ import { InvitationData } from 'db://assets/Scripts/Components/InvitationData'
 import { MapData } from 'db://assets/Scripts/Components/MapData'
 import { Game } from 'db://assets/Scripts/Game'
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
-import { EndGameScreenData } from 'db://assets/Scripts/Components/EndGameScreenData'
 import { Bind } from 'db://assets/Scripts/Components/Keybinds'
 import { GameState } from 'db://assets/Scripts/Enums/GameState'
+import { EndGameScreenData } from 'db://assets/Scripts/Components/EndGameScreenData'
 
 @ccclass('NetworkManager')
 export class NetworkManager {
@@ -238,9 +238,9 @@ export class NetworkManager {
 			})
 		})
 
-		this.GameRoom.onMessage('endGame', () => {
+		this.GameRoom.onMessage('endGame', (data: EndGameScreenData) => {
 			AudioManager.inst.musicSource.stop()
-			UIManager.inst.showEndGameScreen()
+			UIManager.inst.showEndGameScreen(data)
 		})
 
 		this.GameRoom.state.listen('countdownStarted', (value) => {
@@ -414,48 +414,6 @@ export class NetworkManager {
 
 	registerKeyUp(bind: Bind) {
 		this.GameRoom.send('keyUp', bind)
-	}
-
-	getEndGameScreenData(): EndGameScreenData {
-		let winner
-		const myself: string = this.GameRoom.sessionId
-		let title: string
-		let result: number = 0
-		const leftPlayer = this.GameRoom.state.players.get(this.GameRoom.state.leftPlayer)
-		const rightPlayer = this.GameRoom.state.players.get(this.GameRoom.state.rightPlayer)
-
-		if (leftPlayer.score > rightPlayer.score) {
-			winner = this.GameRoom.state.leftPlayer
-		} else if (leftPlayer.score < rightPlayer.score) {
-			winner = this.GameRoom.state.rightPlayer
-		} else {
-			winner = myself
-		}
-
-		if (!winner) {
-			winner = myself
-			title = 'DRAW'
-			result = 0
-		} else {
-			if (winner === myself) {
-				title = 'YOU WON !'
-				result = 1
-			} else {
-				title = 'YOU LOSE !'
-				result = 2
-			}
-		}
-
-		const winnerUser = this.GameRoom.state.players.get(winner)
-		const data: EndGameScreenData = {
-			username: winnerUser.username,
-			avatar: GameManager.inst.avatarCache.get(winnerUser.avatarUrl),
-			leftPlayerScore: leftPlayer.score,
-			rightPlayerScore: rightPlayer.score,
-			title,
-			result
-		}
-		return data
 	}
 
 	get getAuthorization(): string {
