@@ -42,7 +42,7 @@ export class NetworkError extends Component {
 		this.reconnectNode.off(Node.EventType.MOUSE_ENTER, this.hoverCallback)
 	}
 
-	init(text: string, disconnectedFromGame: boolean = false): void {
+	init(text: string, disconnectedFromGame: boolean): void {
 		this.disconnectedFromGame = disconnectedFromGame
 		this.textLabel.string = text
 		AudioManager.inst.playOneShotUI('error')

@@ -189,6 +189,11 @@ export class Game extends Component {
 			case this.keybinds.get(Bind.Powerup):
 				NetworkManager.inst.registerKeyDown(Bind.Powerup)
 				break
+
+			case KeyCode.KEY_T: // DELETE THIS AFTER DEVELOPMENT
+				NetworkManager.inst.getLobbyRoom.connection.close()
+				NetworkManager.inst.getGameRoom.connection.close()
+				break
 		}
 	}
 

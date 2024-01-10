@@ -217,7 +217,11 @@ export class UIManager {
 	showNetworkError(text: string, disconnectedFromGame: boolean = false) {
 		const existingError = this.notifications.getChildByName('NetworkError')
 		if (existingError) {
-			return
+			if (disconnectedFromGame) {
+				existingError.destroy()
+			} else {
+				return
+			}
 		}
 
 		const networkErrorNode = instantiate(this.prefabs.get('NetworkError'))

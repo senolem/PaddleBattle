@@ -76,6 +76,7 @@ export class NetworkManager {
 	async reconnect(disconnectedFromGame: boolean = false) {
 		if (disconnectedFromGame) {
 			this.GameRoom = await this.client.reconnect(this.reconnectionToken)
+			this.reconnectionToken = this.GameRoom.reconnectionToken
 			this.setGameRoomListeners()
 			this.setGameRoomWorldListeners()
 		}
@@ -279,7 +280,7 @@ export class NetworkManager {
 			player.listen('score', (value) => {
 				const leftPlayer = this.GameRoom.state.players.get(this.GameRoom.state.leftPlayer)
 				const rightPlayer = this.GameRoom.state.players.get(this.GameRoom.state.rightPlayer)
-				if (GameManager.inst.game) {
+				if (GameManager.inst.game && leftPlayer && rightPlayer) {
 					GameManager.inst.game.showScores(leftPlayer.score, rightPlayer.score)
 				}
 			})
