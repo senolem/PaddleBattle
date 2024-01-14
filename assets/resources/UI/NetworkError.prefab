@@ -57,7 +57,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 524288,
+    "_layer": 131072,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -117,7 +117,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 524288,
+    "_layer": 131072,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -174,7 +174,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 524288,
+    "_layer": 131072,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -224,7 +224,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 524288,
+    "_layer": 131072,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -363,7 +363,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 524288,
+    "_layer": 131072,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -422,7 +422,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "fddfdfdfdfdfdffdfddfdffddfdfdfdfdffddddddddddddddddddddddddddddddd",
+    "_string": "Error",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 28,
@@ -585,7 +585,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 524288,
+    "_layer": 131072,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -648,7 +648,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 524288,
+    "_layer": 131072,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -698,7 +698,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 524288,
+    "_layer": 131072,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,

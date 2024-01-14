@@ -8,9 +8,9 @@ import { InvitationData } from 'db://assets/Scripts/Components/InvitationData'
 import { MapData } from 'db://assets/Scripts/Components/MapData'
 import { Game } from 'db://assets/Scripts/Game'
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
-import { Bind } from 'db://assets/Scripts/Components/Keybinds'
 import { GameState } from 'db://assets/Scripts/Enums/GameState'
 import { EndGameScreenData } from 'db://assets/Scripts/Components/EndGameScreenData'
+import { InputState, Inputs } from 'db://assets/Scripts/Components/Inputs'
 
 @ccclass('NetworkManager')
 export class NetworkManager {
@@ -22,19 +22,25 @@ export class NetworkManager {
 		return this._inst
 	}
 
-	private node!: Node
+	private node: Node
 	private hostname: string = "127.0.0.1"
 	private port: number = 3000
 	private useSSL: boolean = false
 	private accessToken: string = "UNITY"
 	private reconnectionToken: string
 	private authorization: string
-	private client!: Colyseus.Client
+	private client: Colyseus.Client
 	private LobbyRoom: Colyseus.Room
 	private GameRoom: Colyseus.Room
 	private startGameCallback: () => void
-	private objectsOnAddCallback: () => void
-	private objectsOnRemoveCallback: () => void
+	private entitiesOnAddCallback: () => void
+	private entitiesOnRemoveCallback: () => void
+
+	// Gameplay related stuff
+	public serverTickRate = 60
+	public currentTick = 0
+	public minTimeBetweenTicks = 1.0 / this.serverTickRate
+	public stateCacheSize = 1024
 
 	constructor() {
 		// Create a new NetworkManager node and add it to the scene
@@ -300,14 +306,15 @@ export class NetworkManager {
 			UIManager.inst.loadingScreen.hide()
 			AudioManager.inst.musicSource.play()
 			GameManager.inst.game.showHUD()
+			GameManager.inst.game.enableCamera()
 			GameManager.inst.game.showScores(leftPlayer.score, rightPlayer.score)
 		})
 
-		this.objectsOnAddCallback = this.GameRoom.state.objects.onAdd((object, key) => {
-			GameManager.inst.game.instantiateObject(object)
+		this.entitiesOnAddCallback = this.GameRoom.state.entities.onAdd((object, key) => {
+			GameManager.inst.game.instantiateEntity(object)
 		})
 		
-		this.objectsOnRemoveCallback = this.GameRoom.state.objects.onRemove((object, key) => {
+		this.entitiesOnRemoveCallback = this.GameRoom.state.entities.onRemove((object, key) => {
 			GameManager.inst.game.destroyObject(key)
 		})
 	}
@@ -317,13 +324,13 @@ export class NetworkManager {
 			this.startGameCallback()
 			this.startGameCallback = null
 		}
-		if (this.objectsOnAddCallback) {
-			this.objectsOnAddCallback()
-			this.objectsOnAddCallback = null
+		if (this.entitiesOnAddCallback) {
+			this.entitiesOnAddCallback()
+			this.entitiesOnAddCallback = null
 		}
-		if (this.objectsOnRemoveCallback) {
-			this.objectsOnRemoveCallback()
-			this.objectsOnRemoveCallback = null
+		if (this.entitiesOnRemoveCallback) {
+			this.entitiesOnRemoveCallback()
+			this.entitiesOnRemoveCallback = null
 		}
 	}
 
@@ -332,7 +339,6 @@ export class NetworkManager {
 		UIManager.inst.loadingScreen.setLoadingInfo('Initializing game')
 		const gameCanvasNode: Node = director.getScene().getChildByName('GameCanvas')
 		const gameCanvas: Canvas = gameCanvasNode.getComponent(Canvas)
-		gameCanvas.cameraComponent = GameManager.inst.camera
 		GameManager.inst.game = gameCanvasNode.getComponent(Game)
 		GameManager.inst.keybinds.updateKeybinds()
 		UIManager.inst.loadingScreen.setLoadingInfo('Clearing UI')
@@ -351,6 +357,10 @@ export class NetworkManager {
 		UIManager.inst.loadingScreen.setLoadingInfo('Waiting for other players')
 
 		this.setGameRoomWorldListeners()
+	}
+
+	sendInputs(inputs: InputState) {
+		this.GameRoom.send('updateInputs', inputs)
 	}
 
 	createRoom() {
@@ -409,14 +419,6 @@ export class NetworkManager {
 		return -1
 	}
 
-	registerKeyDown(bind: Bind) {
-		this.GameRoom.send('keyDown', bind)
-	}
-
-	registerKeyUp(bind: Bind) {
-		this.GameRoom.send('keyUp', bind)
-	}
-
 	get getAuthorization(): string {
 		return this.authorization	
 	}
@@ -427,5 +429,9 @@ export class NetworkManager {
 
 	get getGameRoom(): Colyseus.Room {
 		return this.GameRoom
+	}
+
+	get getOwnPlayer(): any {
+		return this.GameRoom.state.players.get(this.GameRoom.sessionId)
 	}
 }

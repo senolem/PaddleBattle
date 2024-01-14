@@ -10,9 +10,13 @@ const { ccclass, property } = _decorator
 export class Initialize extends Component {
 
     protected async onLoad(): Promise<void> {
-		await GameManager.inst.loadResources()
-		await AudioManager.inst.loadResources()
-		await UIManager.inst.loadResources()
+		try {
+			await GameManager.inst.loadResources()
+			await AudioManager.inst.loadResources()
+			await UIManager.inst.loadResources()
+		} catch (error) {
+			throw Error(`Failed to load resource: ${error}`)
+		}
 
 		if (GameManager.inst) {
 			console.log('GameManager initialized')
@@ -26,8 +30,7 @@ export class Initialize extends Component {
 		if (NetworkManager.inst) {
 			console.log('NetworkManager initialized')
 		}
-		
-		Layers.addLayer('GAME', 18)
+
 		director.loadScene("Menu", () => {
 			const canvasNode = director.getScene().getChildByName('UICanvas')
 			director.addPersistRootNode(canvasNode)

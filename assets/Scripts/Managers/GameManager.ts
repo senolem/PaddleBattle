@@ -1,7 +1,8 @@
-import { _decorator, Node, director, Texture2D, SpriteFrame, AudioClip, Camera, resources, view, screen, ResolutionPolicy } from 'cc'
+import { _decorator, Node, director, Texture2D, SpriteFrame, AudioClip, Camera, resources, view, screen, ResolutionPolicy, physics, Vec3, Mesh, Material, ModelComponent, Prefab } from 'cc'
 import { GameMap } from 'db://assets/Scripts/Components/GameMap'
 import { Game } from 'db://assets/Scripts/Game'
 import { Keybinds } from 'db://assets/Scripts/Components/Keybinds'
+import { Inputs } from 'db://assets/Scripts/Components/Inputs'
 const { ccclass, property } = _decorator
 
 @ccclass('GameManager')
@@ -21,6 +22,8 @@ export class GameManager {
 	public musicCache: Map<string, AudioClip> = new Map<string, AudioClip>()
 	public avatarCache: Map<string, SpriteFrame> = new Map<string, SpriteFrame>()
 	public textureCache: Map<string, SpriteFrame> = new Map<string, SpriteFrame>()
+	public prefabsCache: Map<string, Prefab> = new Map<string, Prefab>()
+	public materialCache: Map<string, Material> = new Map<string, Material>()
 	public game: Game
 	public cameraNode: Node
 	public camera: Camera
@@ -37,6 +40,7 @@ export class GameManager {
         director.addPersistRootNode(this.node)
 
 		this.makeResponsive()
+		physics.PhysicsSystem.instance.gravity = new Vec3(0, 0, 0)
 	}
 
 	makeResponsive(): void {
@@ -44,24 +48,38 @@ export class GameManager {
 		view.setResolutionPolicy(resolutionPolicy)
 	}
 
-	loadResources(): Promise<void> {
-		return new Promise((resolve, reject) => {
-			resources.loadDir("game", function (err, assets) {
-				if (err) {
-					reject(err)
-					return
+	loadResources() {
+		resources.loadDir("game", (err, assets) => {
+			if (err) {
+				throw err
+			}
+			assets.forEach((asset) => {
+				if (asset instanceof SpriteFrame) {
+					GameManager.inst.textureCache.set(asset.name, asset)
 				}
+			})
+		})
 
-				assets.forEach(function (asset) {
-					if (asset instanceof SpriteFrame) {
-						GameManager.inst.textureCache.set(asset.name, asset)
-					}
-				})
+		resources.loadDir("prefabs", (err, assets) => {
+			if (err) {
+				throw err
+			}
+			assets.forEach((asset) => {
+				if (asset instanceof Prefab) {
+					GameManager.inst.prefabsCache.set(asset.name, asset)
+				}
+			})
+		})
 
-				resolve()
+		resources.loadDir("materials", (err, assets) => {
+			if (err) {
+				throw err
+			}
+			assets.forEach((asset) => {
+				if (asset instanceof Material) {
+					GameManager.inst.materialCache.set(asset.name, asset)
+				}
 			})
 		})
 	}
 }
-
-

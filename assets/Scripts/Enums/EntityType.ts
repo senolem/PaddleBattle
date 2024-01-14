@@ -1,4 +1,4 @@
-export enum ObjectType {
+export enum EntityType {
 	TopWall = 1,
 	BottomWall,
 	LeftWall,

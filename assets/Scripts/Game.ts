@@ -1,21 +1,35 @@
-import { _decorator, Canvas, Component, EventKeyboard, find, Input, input, KeyCode, Label, lerp, Node, Sprite, SpriteFrame, AnimationComponent } from 'cc';
+import { _decorator, Canvas, Component, EventKeyboard, find, Input, input, KeyCode, Label, lerp, Node, Sprite, SpriteFrame, AnimationComponent, Vec2, Vec3, Camera, director } from 'cc';
 import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager';
-import { ObjectType } from 'db://assets/Scripts/Enums/ObjectType';
-import { WorldObject } from 'db://assets/Scripts/Components/WorldObject';
+import { EntityType } from 'db://assets/Scripts/Enums/EntityType';
+import { WorldEntity } from 'db://assets/Scripts/Components/WorldEntity';
 import { Bind } from 'db://assets/Scripts/Components/Keybinds';
-import { GameState } from './Enums/GameState';
-import { AudioManager } from './Managers/AudioManager';
+import { GameState } from 'db://assets/Scripts/Enums/GameState';
+import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager';
+import { InputState, Inputs } from 'db://assets/Scripts/Components/Inputs';
+import { SimulationState } from 'db://assets/Scripts/Components/SimulationState';
 const { ccclass, property } = _decorator;
 
 @ccclass('Game')
 export class Game extends Component {
-	// Game canvas, background, HUD and keybinds
+	// Game camera, canvas, background, HUD
+	private cameraNode: Node
+	private camera: Camera
 	private canvas: Canvas
 	private backgroundNode: Node
 	private background: Sprite
 	private hud: Node
-	private keybinds: Map<Bind, KeyCode> = new Map<Bind, KeyCode>()
 	private paddleId: string
+
+	// Networking stuff
+	private lastCorrectedFrame = 0
+	private timer = 0
+	private simulationStateCache: Array<SimulationState> = new Array<SimulationState>()
+	private inputStateCache: Array<InputState> = new Array<InputState>()
+
+	// Keybinds and inputs
+	private keybinds: Map<Bind, KeyCode> = new Map<Bind, KeyCode>()
+	private inputs: Inputs = new Inputs()
+	private previousInputs: Inputs = new Inputs()
 
 	// Score frame
 	private scoreFrameNode: Node
@@ -42,20 +56,22 @@ export class Game extends Component {
 	private rightPlayerScoreAnimation: AnimationComponent
 
 	// Objects
-	public topWall: WorldObject
-	public bottomWall: WorldObject
-	public leftWall: WorldObject
-	public rightWall: WorldObject
-	public leftPaddle: WorldObject
-	public rightPaddle: WorldObject
-	public ball: WorldObject
-	public objects: Map<string, WorldObject>
+	public topWall: WorldEntity
+	public bottomWall: WorldEntity
+	public leftWall: WorldEntity
+	public rightWall: WorldEntity
+	public leftPaddle: WorldEntity
+	public rightPaddle: WorldEntity
+	public ball: WorldEntity
+	public entities: Map<string, WorldEntity>
 
 	// Previous score
 	private leftScore: number
 	private rightScore: number
 
 	protected onLoad(): void {
+		this.cameraNode = director.getScene().getChildByName('GameCamera')
+		this.camera = this.cameraNode.getComponent(Camera)
 		this.canvas = this.node.getComponent(Canvas)
 		this.backgroundNode = this.node.getChildByName('GameBackground')
 		this.background = this.backgroundNode.getComponent(Sprite)
@@ -83,6 +99,11 @@ export class Game extends Component {
 
 		this.leftScore = 0
 		this.rightScore = 0
+		this.entities = new Map<string, WorldEntity>()
+		this.lastCorrectedFrame = 0
+		this.timer = 0
+		this.simulationStateCache.length = 0
+		this.inputStateCache.length = 0
 	}
 
 	protected onEnable(): void {
@@ -97,73 +118,134 @@ export class Game extends Component {
 
 	protected update(dt: number): void {
 		if (NetworkManager.inst && NetworkManager.inst.getGameRoom && NetworkManager.inst.getGameRoom.state.gameState === GameState.Playing) {
-			this.objects.forEach((object) => {
-				if (object.id !== this.paddleId) {
-					const position = object.node.position.clone()
-					position.x = lerp(position.x, object.state.position.x, 0.95)
-					position.y = lerp(position.y, object.state.position.y, 0.95)
-					object.node.position = position
-				} else {
-					object.node.position = object.state.position
+			this.entities.forEach((entity) => {
+				if (entity.id != this.paddleId) {
+					entity.tween()
 				}
 			})
+			this.timer += dt
+
+			const localPaddleEntity = this.entities.get(this.paddleId)
+			while (this.timer >= NetworkManager.inst.minTimeBetweenTicks) {
+				this.timer -= NetworkManager.inst.minTimeBetweenTicks
+				const cacheIndex = NetworkManager.inst.currentTick % NetworkManager.inst.stateCacheSize
+
+				const inputs = this.inputs.getInputs
+				this.inputStateCache[cacheIndex] = inputs
+				this.simulationStateCache[cacheIndex] = this.getCurrentSimulationState(localPaddleEntity)
+
+				if (inputs != this.previousInputs.getInputs) {
+					NetworkManager.inst.sendInputs(inputs)
+					this.previousInputs = this.inputs
+
+					localPaddleEntity.moveInputs(inputs)
+				}
+
+				NetworkManager.inst.currentTick++
+			}
+			this.reconciliate(localPaddleEntity)
 		}
 	}
 
-	instantiateObject(object): WorldObject{
-		if (!this.objects) {
-			this.objects = new Map<string, WorldObject>()
+	reconciliate(entity: WorldEntity) {
+		const player = NetworkManager.inst.getOwnPlayer
+		const currentServerTick = player.inputData.currentTick
+
+		if (currentServerTick <= this.lastCorrectedFrame) {
+			return
 		}
 
-		const worldObject: WorldObject = new WorldObject(object, object.id, this.node)
+		const cacheIndex = currentServerTick % NetworkManager.inst.stateCacheSize
+		const cachedInputState: InputState = this.inputStateCache[cacheIndex]
+		const cachedSimulationState: SimulationState = this.simulationStateCache[cacheIndex]
+		const serverPosition = new Vec3(entity.state.position.x, entity.state.position.y, entity.state.position.z)
+		const diff = Vec3.distance(cachedSimulationState.position, serverPosition)
 
-		switch (object.objectType) {
-			case ObjectType.TopWall:
-				this.topWall = worldObject
+		if (diff > 0.001) {
+			console.log('reconciliating')
+			entity.node.position = serverPosition
+			let rewindTick = currentServerTick
+
+			while (rewindTick < NetworkManager.inst.currentTick) {
+				const rewindCacheIndex = rewindTick % NetworkManager.inst.stateCacheSize
+				const rewindCachedInputState: InputState = this.inputStateCache[rewindCacheIndex]
+				const rewindCachedSimulationState: SimulationState = this.simulationStateCache[rewindCacheIndex]
+
+				if (rewindCachedInputState == null || rewindCachedSimulationState) {
+					++rewindTick
+					continue
+				}
+
+				entity.moveInputs(rewindCachedInputState)
+				this.simulationStateCache[rewindCacheIndex] = this.getCurrentSimulationState(entity)
+				this.simulationStateCache[rewindCacheIndex].currentTick = rewindTick
+
+				++rewindTick
+			}
+		}
+		this.lastCorrectedFrame = this.getCurrentSimulationState(entity).currentTick
+	}
+
+	getCurrentSimulationState(entity: WorldEntity): SimulationState {
+		const simulationState: SimulationState = {
+			position: entity.node.position,
+			quaternion: entity.node.rotation,
+			size: entity.node.scale,
+			currentTick: NetworkManager.inst.currentTick
+		}
+		return simulationState
+	}
+
+	instantiateEntity(entity: any): WorldEntity{
+		const worldEntity: WorldEntity = new WorldEntity(entity, entity.id, this.node)
+
+		switch (entity.entityType) {
+			case EntityType.TopWall:
+				this.topWall = worldEntity
 				break
 			
-			case ObjectType.BottomWall:
-				this.bottomWall = worldObject
+			case EntityType.BottomWall:
+				this.bottomWall = worldEntity
 				break
 
-			case ObjectType.LeftWall:
-				this.leftWall = worldObject
+			case EntityType.LeftWall:
+				this.leftWall = worldEntity
 				break
 
-			case ObjectType.RightWall:
-				this.rightWall = worldObject
+			case EntityType.RightWall:
+				this.rightWall = worldEntity
 				break
 
-			case ObjectType.LeftPaddle:
-				this.leftPaddle = worldObject
+			case EntityType.LeftPaddle:
+				this.leftPaddle = worldEntity
 				if (NetworkManager.inst.getGameRoom.sessionId === NetworkManager.inst.getGameRoom.state.leftPlayer) {
-					this.paddleId = worldObject.id
+					this.paddleId = worldEntity.id
 				}
 				break
 
-			case ObjectType.RightPaddle:
-				this.rightPaddle = worldObject
+			case EntityType.RightPaddle:
+				this.rightPaddle = worldEntity
 				if (NetworkManager.inst.getGameRoom.sessionId === NetworkManager.inst.getGameRoom.state.rightPlayer) {
-					this.paddleId = worldObject.id
+					this.paddleId = worldEntity.id
 				}
 				break
 				
-			case ObjectType.Ball:
-				this.ball = worldObject
+			case EntityType.Ball:
+				this.ball = worldEntity
 				break
 		}
 
-		this.objects.set(object.id, worldObject)
-		return worldObject
+		this.entities.set(entity.id, worldEntity)
+		return worldEntity
 	}
 
 	destroyObject(key: string) {
-		if (this.objects) {
-			const gameObject = this.objects.get(key)
+		if (this.entities) {
+			const gameObject = this.entities.get(key)
 			if (gameObject) {
 				gameObject.destroy()
 			}
-			this.objects.delete(key)
+			this.entities.delete(key)
 		} else {
 			const existingNode = this.node.getChildByName(key)
 			if (existingNode) {
@@ -179,20 +261,15 @@ export class Game extends Component {
 	onKeyDown(event: EventKeyboard) {
 		switch(event.keyCode) {
 			case this.keybinds.get(Bind.Upward):
-				NetworkManager.inst.registerKeyDown(Bind.Upward)
+				this.inputs.setKeyDown(Bind.Upward)
 				break
 
 			case this.keybinds.get(Bind.Downward):
-				NetworkManager.inst.registerKeyDown(Bind.Downward)
+				this.inputs.setKeyDown(Bind.Downward)
 				break
 
 			case this.keybinds.get(Bind.Powerup):
-				NetworkManager.inst.registerKeyDown(Bind.Powerup)
-				break
-
-			case KeyCode.KEY_T: // DELETE THIS AFTER DEVELOPMENT
-				NetworkManager.inst.getLobbyRoom.connection.close()
-				NetworkManager.inst.getGameRoom.connection.close()
+				this.inputs.setKeyDown(Bind.Powerup)
 				break
 		}
 	}
@@ -200,15 +277,15 @@ export class Game extends Component {
 	onKeyUp(event: EventKeyboard) {
 		switch(event.keyCode) {
 			case this.keybinds.get(Bind.Upward):
-				NetworkManager.inst.registerKeyUp(Bind.Upward)
+				this.inputs.setKeyUp(Bind.Upward)
 				break
 
 			case this.keybinds.get(Bind.Downward):
-				NetworkManager.inst.registerKeyUp(Bind.Downward)
+				this.inputs.setKeyUp(Bind.Downward)
 				break
 
 			case this.keybinds.get(Bind.Powerup):
-				NetworkManager.inst.registerKeyUp(Bind.Powerup)
+				this.inputs.setKeyUp(Bind.Powerup)
 				break
 		}
 	}
@@ -308,6 +385,14 @@ export class Game extends Component {
 
 	hideHUD() {
 		this.hud.active = false
+	}
+
+	enableCamera() {
+		this.camera.enabled = true
+	}
+
+	disableCamera() {
+		this.camera.enabled = false
 	}
 }
 

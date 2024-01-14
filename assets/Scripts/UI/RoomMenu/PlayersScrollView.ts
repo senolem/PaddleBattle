@@ -27,6 +27,7 @@ export class PlayersScrollView extends Component {
 		const playerItemNode = await instantiate(this.playerItemPrefab)
 		const playerItem = playerItemNode.getComponent(PlayerItem)
 		this.players.set(id, playerItemNode)
+		playerItemNode.layer = 1 << 17
 		playerItemNode.parent = this.contentNode
 		assetManager.loadRemote<ImageAsset>(avatarUrl + '?authorization=' + NetworkManager.inst.getAuthorization, (err, imageAsset) => {
 			if (err) {

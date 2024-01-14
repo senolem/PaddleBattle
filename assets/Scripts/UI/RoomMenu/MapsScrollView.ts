@@ -22,6 +22,7 @@ export class MapsScrollView extends Component {
 		GameManager.inst.maps.set(map.id, newMap)
 		
 		const mapItemNode = instantiate(this.mapItemPrefab)
+		mapItemNode.layer = 1 << 17
 		mapItemNode.parent = this.contentNode
 
 		const mapItem = mapItemNode.getComponent(MapItem)

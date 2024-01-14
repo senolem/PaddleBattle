@@ -170,7 +170,7 @@ export class UIManager {
 
 	setCanvas(canvas: Canvas) {
 		this.canvas = canvas
-		GameManager.inst.cameraNode = canvas.node.getChildByName('Camera')
+		GameManager.inst.cameraNode = canvas.node.getChildByName('UICamera')
 		GameManager.inst.camera = GameManager.inst.cameraNode.getComponent(Camera)
 		this.background = canvas.node.getChildByName('Background')
 		this.backgroundScrollingParallax = this.background.getComponent(ScrollingParallax)
@@ -200,6 +200,7 @@ export class UIManager {
 
 	showInvitation(invitationData: InvitationData) {
 		const invitationNode = instantiate(this.prefabs.get('Invitation'))
+		invitationNode.layer = 1 << 17
 		invitationNode.parent = this.notifications
 
 		const invitation = invitationNode.getComponent(Invitation)
@@ -208,6 +209,7 @@ export class UIManager {
 
 	showNotification(text: string) {
 		const notificationNode = instantiate(this.prefabs.get('Notification'))
+		notificationNode.layer = 1 << 17
 		notificationNode.parent = this.notifications
 
 		const notification = notificationNode.getComponent(Notification)
@@ -225,6 +227,7 @@ export class UIManager {
 		}
 
 		const networkErrorNode = instantiate(this.prefabs.get('NetworkError'))
+		networkErrorNode.layer = 1 << 17
 		networkErrorNode.parent = this.notifications
 
 		const networkError = networkErrorNode.getComponent(NetworkError)
@@ -233,6 +236,7 @@ export class UIManager {
 
 	showEndGameScreen(data: EndGameScreenData) {
 		const endGameScreenNode = instantiate(this.prefabs.get('EndGameScreen'))
+		endGameScreenNode.layer = 1 << 17
 		endGameScreenNode.parent = this.notifications
 		const endGame = endGameScreenNode.getComponent(EndGameScreen)
 		endGame.init(data)
@@ -240,6 +244,7 @@ export class UIManager {
 
 	showStatus(title: string, message: string) {
 		const statusBoxNode = instantiate(this.prefabs.get('StatusBox'))
+		statusBoxNode.layer = 1 << 17
 		statusBoxNode.parent = this.status
 
 		const statusBox = statusBoxNode.getComponent(StatusBox)
