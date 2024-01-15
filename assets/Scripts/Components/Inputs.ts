@@ -7,14 +7,15 @@ export interface InputState {
 	upward: boolean
 	downward: boolean
 	powerup: boolean
-	currentTick: number
+	dt: number
 }
 
 @ccclass('Inputs')
 export class Inputs {
-	private upward: boolean
-	private downward: boolean
-	private powerup: boolean
+	upward: boolean
+	downward: boolean
+	powerup: boolean
+	currentTick: number
 
 	public setKeyUp(key: Bind) {
 		switch (key) {
@@ -48,12 +49,16 @@ export class Inputs {
 		}
 	}
 
-	get getInputs(): InputState {
+	public compare(other: InputState) {
+		return (this.upward === other.upward && this.downward === other.downward && this.powerup === other.powerup)
+	}
+
+	getInputs(dt: number): InputState {
 		const state: InputState = {
 			upward: this.upward,
 			downward: this.downward,
 			powerup: this.powerup,
-			currentTick: NetworkManager.inst.currentTick
+			dt: dt
 		}
 		return state
 	}

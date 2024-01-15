@@ -237,7 +237,7 @@ export class AudioManager {
 	public get getMusicVolume() {
 		let volume = sys.localStorage.getItem('musicVolume')
 		if (volume === undefined) {
-			volume = 0.75
+			volume = 0.20
 			sys.localStorage.setItem('musicVolume', volume)
 			this._musicSource.volume = volume
 		}
@@ -250,7 +250,7 @@ export class AudioManager {
     public get getEffectsVolume() {
 		let volume = sys.localStorage.getItem('effectsVolume')
 		if (volume === undefined) {
-			volume = 0.50
+			volume = 0.35
 			sys.localStorage.setItem('effectsVolume', volume)
 			this._effectsSource.volume = volume
 		}
@@ -263,7 +263,7 @@ export class AudioManager {
     public get getUIVolume() {
 		let volume = sys.localStorage.getItem('UIVolume')
 		if (volume === undefined) {
-			volume = 0.60
+			volume = 0.025
 			sys.localStorage.setItem('UIVolume', volume)
 			this._musicSource.volume = volume
 		}

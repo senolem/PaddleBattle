@@ -63,7 +63,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 131072,
+    "_layer": 524288,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -126,7 +126,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 131072,
+    "_layer": 524288,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -176,7 +176,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 131072,
+    "_layer": 524288,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -319,7 +319,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 131072,
+    "_layer": 524288,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -369,7 +369,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 131072,
+    "_layer": 524288,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -502,7 +502,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 131072,
+    "_layer": 524288,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -686,7 +686,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 131072,
+    "_layer": 524288,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -736,7 +736,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 131072,
+    "_layer": 524288,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -875,7 +875,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 131072,
+    "_layer": 524288,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -1100,7 +1100,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 131072,
+    "_layer": 524288,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -1163,7 +1163,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 131072,
+    "_layer": 524288,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -1216,7 +1216,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 131072,
+    "_layer": 524288,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -1591,7 +1591,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 131072,
+    "_layer": 524288,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -1644,7 +1644,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 131072,
+    "_layer": 524288,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,

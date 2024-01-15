@@ -1,4 +1,4 @@
-import { _decorator, Node, director, assetManager, ImageAsset, Texture2D, UI, Canvas, game } from 'cc'
+import { _decorator, Node, director, assetManager, ImageAsset, Texture2D, UI, Canvas, game, input } from 'cc'
 const { ccclass, property } = _decorator
 import Colyseus from 'db://colyseus-sdk/colyseus.js'
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
@@ -11,6 +11,7 @@ import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
 import { GameState } from 'db://assets/Scripts/Enums/GameState'
 import { EndGameScreenData } from 'db://assets/Scripts/Components/EndGameScreenData'
 import { InputState, Inputs } from 'db://assets/Scripts/Components/Inputs'
+import { ClientInputMessage } from '../Components/ClientInputMessage'
 
 @ccclass('NetworkManager')
 export class NetworkManager {
@@ -35,12 +36,7 @@ export class NetworkManager {
 	private startGameCallback: () => void
 	private entitiesOnAddCallback: () => void
 	private entitiesOnRemoveCallback: () => void
-
-	// Gameplay related stuff
-	public serverTickRate = 60
-	public currentTick = 0
-	public minTimeBetweenTicks = 1.0 / this.serverTickRate
-	public stateCacheSize = 1024
+	public lastSN = 0
 
 	constructor() {
 		// Create a new NetworkManager node and add it to the scene
@@ -176,6 +172,15 @@ export class NetworkManager {
 		this.LobbyRoom.onMessage('leftMatchmaking', () => {
 			UIManager.inst.switchUIState(UIState.PlayMenu)
 		})
+
+		// Currently not working, always says that the room has been disposed. Colyseus bug?
+		//this.LobbyRoom.onMessage('reconnect', async (reconnectionToken: string) => {
+		//	console.log('reconnect ' + reconnectionToken)
+		//	this.reconnectionToken = reconnectionToken
+		//	this.GameRoom = await this.client.reconnect(this.reconnectionToken)
+		//	this.setGameRoomListeners()
+		//	this.setGameRoomWorldListeners()
+		//})
 	}
 
 	async setGameRoomListeners() {
@@ -315,7 +320,7 @@ export class NetworkManager {
 		})
 		
 		this.entitiesOnRemoveCallback = this.GameRoom.state.entities.onRemove((object, key) => {
-			GameManager.inst.game.destroyObject(key)
+			GameManager.inst.game.destroyEntity(key)
 		})
 	}
 
@@ -359,8 +364,8 @@ export class NetworkManager {
 		this.setGameRoomWorldListeners()
 	}
 
-	sendInputs(inputs: InputState) {
-		this.GameRoom.send('updateInputs', inputs)
+	sendInputs(message: ClientInputMessage) {
+		this.GameRoom.send('updateInputs', message)
 	}
 
 	createRoom() {

@@ -1,8 +1,9 @@
-import { _decorator, BoxCollider, Collider, director, instantiate, lerp, Mesh, MeshRenderer, Node, physics, RigidBody, SphereCollider, Vec3 } from "cc"
+import { _decorator, BoxCollider, Collider, director, instantiate, lerp, Mesh, MeshRenderer, Node, physics, RigidBody, SphereCollider, tween, Vec3 } from "cc"
 import { InputState } from "db://assets/Scripts/Components/Inputs"
 import { BodyType } from "db://assets/Scripts/Enums/BodyType"
 import { ShapeType } from "db://assets/Scripts/Enums/ShapeType"
-import { GameManager } from "../Managers/GameManager"
+import { GameManager } from "db://assets/Scripts/Managers/GameManager"
+import { TweenPool } from "db://assets/Scripts/Components/TweenPool"
 const { ccclass } = _decorator
 
 @ccclass('WorldEntity')
@@ -14,6 +15,8 @@ export class WorldEntity {
 	id: string
 	body: RigidBody
 	collider: Collider
+	targetPosition: Vec3
+	tweenPool: TweenPool
 
 	constructor(state: any, id: string, parent: Node) {
 		const existingNode = parent.getChildByName(id)
@@ -44,13 +47,17 @@ export class WorldEntity {
 		this.node.name = this.id
 		this.node.layer = 1 << 18
 		this.meshRenderer = this.node.getComponent(MeshRenderer)
-		this.node.position = state.position
-		this.node.rotation = state.quaternion
-		this.node.scale = state.size
+		this.node.setPosition(state.position)
+		this.node.setRotation(state.quaternion)
+		this.node.setScale(state.size)
 
 		this.body = this.node.addComponent(RigidBody)
 		this.body.node = this.node
-		this.body.mass = state.mass
+		if (state.mass === 0) {
+			this.body.mass = 0.0001
+		} else {
+			this.body.mass = state.mass
+		}
 		this.body.setLinearVelocity(this.state.velocity)
 		this.body.setAngularVelocity(this.state.angularVelocity)
 		switch (state.bodyType) {
@@ -68,15 +75,48 @@ export class WorldEntity {
 		}
 		this.body.linearFactor = new Vec3(this.state.linearFactor.x, this.state.linearFactor.y, this.state.linearFactor.z)
 		this.body.linearDamping = this.state.linearDamping
+		if (this.state.fixedRotation) {
+			this.body.angularFactor = new Vec3(0, 0, 0)
+		}
 		// this.body.fixedRotation = this.state.fixedRotation
 		// No fixed rotation available?
+		this.body.useGravity = false
+		this.targetPosition = new Vec3()
+		this.tweenPool = new TweenPool()
 	}
 
-	move(position: Vec3) {
-		this.node.position = position
+	updateState() {
+		this.targetPosition.set(this.state.position.x, this.state.position.y, this.state.position.z)
+		this.node.setPosition(this.targetPosition)
+
+		// We are instantly updating the quaternion and size for now
+		this.node.setRotation(this.state.quaternion)
+		this.node.setScale(this.state.size)
 	}
 
-	moveInputs(inputs: InputState) {
+	tweenState() {
+		const newPos = new Vec3(this.state.position.x, this.state.position.y, this.state.position.z)
+		if (!this.targetPosition.equals(newPos)) {
+			this.tweenPool.clear()
+			this.node.setPosition(this.targetPosition)
+
+			this.tweenPool.add(tween(this.node.position).to(1 / 20, newPos, {
+				onUpdate: (target: Vec3) => {
+					if (this.node) {
+						this.node.setPosition(target)
+					}
+				}
+			}).start())
+
+			this.targetPosition.set(newPos)
+		}
+		
+		// We are instantly updating the quaternion and size for now
+		this.node.setRotation(this.state.quaternion)
+		this.node.setScale(this.state.size)
+	}
+
+	moveInputs(inputs: InputState, dt: number) {
 		if (inputs.upward && !inputs.downward) {
 			this.body.setLinearVelocity(new Vec3(0, this.state.baseSpeed, 0))
 		} else if (!inputs.upward && inputs.downward) {
@@ -86,15 +126,8 @@ export class WorldEntity {
 		}
 	}
 
-	tween() {
-		this.node.position = new Vec3(
-			lerp(this.node.position.x, this.state.position.x, 0.9),
-			lerp(this.node.position.y, this.state.position.y, 0.9),
-			lerp(this.node.position.z, this.state.position.z, 0.9)
-		)
-	}
-
 	destroy() {
+		this.tweenPool.clear()
 		this.node.destroy()
 	}
 }

@@ -1,13 +1,14 @@
-import { _decorator, Canvas, Component, EventKeyboard, find, Input, input, KeyCode, Label, lerp, Node, Sprite, SpriteFrame, AnimationComponent, Vec2, Vec3, Camera, director } from 'cc';
-import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager';
-import { EntityType } from 'db://assets/Scripts/Enums/EntityType';
-import { WorldEntity } from 'db://assets/Scripts/Components/WorldEntity';
-import { Bind } from 'db://assets/Scripts/Components/Keybinds';
-import { GameState } from 'db://assets/Scripts/Enums/GameState';
-import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager';
-import { InputState, Inputs } from 'db://assets/Scripts/Components/Inputs';
-import { SimulationState } from 'db://assets/Scripts/Components/SimulationState';
-const { ccclass, property } = _decorator;
+import { _decorator, Canvas, Component, EventKeyboard, find, Input, input, KeyCode, Label, lerp, Node, Sprite, SpriteFrame, AnimationComponent, Vec2, Vec3, Camera, director } from 'cc'
+import { NetworkManager } from 'db://assets/Scripts/Managers/NetworkManager'
+import { EntityType } from 'db://assets/Scripts/Enums/EntityType'
+import { WorldEntity } from 'db://assets/Scripts/Components/WorldEntity'
+import { Bind } from 'db://assets/Scripts/Components/Keybinds'
+import { GameState } from 'db://assets/Scripts/Enums/GameState'
+import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
+import { InputState, Inputs } from 'db://assets/Scripts/Components/Inputs'
+import { SimulationState } from 'db://assets/Scripts/Components/SimulationState'
+import { ClientInputMessage } from './Components/ClientInputMessage'
+const { ccclass, property } = _decorator
 
 @ccclass('Game')
 export class Game extends Component {
@@ -21,10 +22,10 @@ export class Game extends Component {
 	private paddleId: string
 
 	// Networking stuff
-	private lastCorrectedFrame = 0
-	private timer = 0
-	private simulationStateCache: Array<SimulationState> = new Array<SimulationState>()
-	private inputStateCache: Array<InputState> = new Array<InputState>()
+	private now: number
+	private lastServerState: any
+	private lastRecvServerStateTime: number = 0
+	private pendingInputs: Array<ClientInputMessage>
 
 	// Keybinds and inputs
 	private keybinds: Map<Bind, KeyCode> = new Map<Bind, KeyCode>()
@@ -100,10 +101,9 @@ export class Game extends Component {
 		this.leftScore = 0
 		this.rightScore = 0
 		this.entities = new Map<string, WorldEntity>()
-		this.lastCorrectedFrame = 0
-		this.timer = 0
-		this.simulationStateCache.length = 0
-		this.inputStateCache.length = 0
+		this.lastServerState = Object.assign(NetworkManager.inst.getGameRoom.state)
+		this.lastRecvServerStateTime = Date.now()
+		this.pendingInputs = new Array<ClientInputMessage>()
 	}
 
 	protected onEnable(): void {
@@ -118,82 +118,35 @@ export class Game extends Component {
 
 	protected update(dt: number): void {
 		if (NetworkManager.inst && NetworkManager.inst.getGameRoom && NetworkManager.inst.getGameRoom.state.gameState === GameState.Playing) {
-			this.entities.forEach((entity) => {
-				if (entity.id != this.paddleId) {
-					entity.tween()
+			this.lastRecvServerStateTime = Date.now()
+			this.now += Date.now() - this.lastRecvServerStateTime
+
+			// Send inputs
+			const inputs = this.inputs.getInputs(dt)
+			if (!this.previousInputs.compare(inputs)) {
+				const message: ClientInputMessage = {
+					sn: ++NetworkManager.inst.lastSN,
+					inputs: [inputs]
 				}
-			})
-			this.timer += dt
+				this.pendingInputs.push(message)
+				NetworkManager.inst.sendInputs(message)
 
-			const localPaddleEntity = this.entities.get(this.paddleId)
-			while (this.timer >= NetworkManager.inst.minTimeBetweenTicks) {
-				this.timer -= NetworkManager.inst.minTimeBetweenTicks
-				const cacheIndex = NetworkManager.inst.currentTick % NetworkManager.inst.stateCacheSize
-
-				const inputs = this.inputs.getInputs
-				this.inputStateCache[cacheIndex] = inputs
-				this.simulationStateCache[cacheIndex] = this.getCurrentSimulationState(localPaddleEntity)
-
-				if (inputs != this.previousInputs.getInputs) {
-					NetworkManager.inst.sendInputs(inputs)
-					this.previousInputs = this.inputs
-
-					localPaddleEntity.moveInputs(inputs)
-				}
-
-				NetworkManager.inst.currentTick++
+				// Apply move locally
+				const localPlayerEntity = this.entities.get(this.paddleId)
+				localPlayerEntity.moveInputs(inputs, dt)
 			}
-			this.reconciliate(localPaddleEntity)
-		}
-	}
 
-	reconciliate(entity: WorldEntity) {
-		const player = NetworkManager.inst.getOwnPlayer
-		const currentServerTick = player.inputData.currentTick
-
-		if (currentServerTick <= this.lastCorrectedFrame) {
-			return
-		}
-
-		const cacheIndex = currentServerTick % NetworkManager.inst.stateCacheSize
-		const cachedInputState: InputState = this.inputStateCache[cacheIndex]
-		const cachedSimulationState: SimulationState = this.simulationStateCache[cacheIndex]
-		const serverPosition = new Vec3(entity.state.position.x, entity.state.position.y, entity.state.position.z)
-		const diff = Vec3.distance(cachedSimulationState.position, serverPosition)
-
-		if (diff > 0.001) {
-			console.log('reconciliating')
-			entity.node.position = serverPosition
-			let rewindTick = currentServerTick
-
-			while (rewindTick < NetworkManager.inst.currentTick) {
-				const rewindCacheIndex = rewindTick % NetworkManager.inst.stateCacheSize
-				const rewindCachedInputState: InputState = this.inputStateCache[rewindCacheIndex]
-				const rewindCachedSimulationState: SimulationState = this.simulationStateCache[rewindCacheIndex]
-
-				if (rewindCachedInputState == null || rewindCachedSimulationState) {
-					++rewindTick
-					continue
-				}
-
-				entity.moveInputs(rewindCachedInputState)
-				this.simulationStateCache[rewindCacheIndex] = this.getCurrentSimulationState(entity)
-				this.simulationStateCache[rewindCacheIndex].currentTick = rewindTick
-
-				++rewindTick
+			// Update entities
+			if (this.entities) {
+				this.entities.forEach((entity) => {
+					if (entity.id === this.paddleId) {
+						entity.updateState()
+					} else {
+						entity.tweenState()
+					}
+				})
 			}
 		}
-		this.lastCorrectedFrame = this.getCurrentSimulationState(entity).currentTick
-	}
-
-	getCurrentSimulationState(entity: WorldEntity): SimulationState {
-		const simulationState: SimulationState = {
-			position: entity.node.position,
-			quaternion: entity.node.rotation,
-			size: entity.node.scale,
-			currentTick: NetworkManager.inst.currentTick
-		}
-		return simulationState
 	}
 
 	instantiateEntity(entity: any): WorldEntity{
@@ -239,11 +192,11 @@ export class Game extends Component {
 		return worldEntity
 	}
 
-	destroyObject(key: string) {
+	destroyEntity(key: string) {
 		if (this.entities) {
-			const gameObject = this.entities.get(key)
-			if (gameObject) {
-				gameObject.destroy()
+			const entity = this.entities.get(key)
+			if (entity) {
+				entity.destroy()
 			}
 			this.entities.delete(key)
 		} else {
@@ -368,7 +321,7 @@ export class Game extends Component {
 		}
 
 		if (this.scoreSlideOutTimeout) {
-			clearTimeout(this.scoreSlideOutTimeout);
+			clearTimeout(this.scoreSlideOutTimeout)
 		}
 
 		this.scoreSlideOutTimeout = setTimeout(() => {
