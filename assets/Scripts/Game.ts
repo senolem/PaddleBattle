@@ -139,7 +139,7 @@ export class Game extends Component {
 			// Update entities
 			if (this.entities) {
 				this.entities.forEach((entity) => {
-					if (entity.id === this.paddleId) {
+					if (entity.id === this.paddleId || NetworkManager.inst.lastSN === 0) {
 						entity.updateState()
 					} else {
 						entity.tweenState()
