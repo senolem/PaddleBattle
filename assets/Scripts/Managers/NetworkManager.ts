@@ -358,6 +358,7 @@ export class NetworkManager {
 		GameManager.inst.game.setLeftPlayer(GameManager.inst.avatarCache.get(leftPlayer.avatarUrl), leftPlayer.username)
 		GameManager.inst.game.setRightPlayer(GameManager.inst.avatarCache.get(rightPlayer.avatarUrl), rightPlayer.username)
 		GameManager.inst.game.setScores(leftPlayer.score, rightPlayer.score)
+		this.lastSN = 0
 		this.GameRoom.send('clientReady')
 		UIManager.inst.loadingScreen.setLoadingInfo('Waiting for other players')
 
