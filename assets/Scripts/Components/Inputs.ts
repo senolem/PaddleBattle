@@ -7,7 +7,6 @@ export interface InputState {
 	upward: boolean
 	downward: boolean
 	powerup: boolean
-	dt: number
 }
 
 @ccclass('Inputs')
@@ -15,7 +14,6 @@ export class Inputs {
 	upward: boolean
 	downward: boolean
 	powerup: boolean
-	currentTick: number
 
 	public setKeyUp(key: Bind) {
 		switch (key) {
@@ -53,12 +51,11 @@ export class Inputs {
 		return (this.upward === other.upward && this.downward === other.downward && this.powerup === other.powerup)
 	}
 
-	getInputs(dt: number): InputState {
+	getInputs(): InputState {
 		const state: InputState = {
 			upward: this.upward,
 			downward: this.downward,
 			powerup: this.powerup,
-			dt: dt
 		}
 		return state
 	}

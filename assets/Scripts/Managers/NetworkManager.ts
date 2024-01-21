@@ -10,8 +10,7 @@ import { Game } from 'db://assets/Scripts/Game'
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
 import { GameState } from 'db://assets/Scripts/Enums/GameState'
 import { EndGameScreenData } from 'db://assets/Scripts/Components/EndGameScreenData'
-import { InputState, Inputs } from 'db://assets/Scripts/Components/Inputs'
-import { ClientInputMessage } from '../Components/ClientInputMessage'
+import { InputState } from 'db://assets/Scripts/Components/Inputs'
 
 @ccclass('NetworkManager')
 export class NetworkManager {
@@ -174,13 +173,13 @@ export class NetworkManager {
 		})
 
 		// Currently not working, always says that the room has been disposed. Colyseus bug?
-		//this.LobbyRoom.onMessage('reconnect', async (reconnectionToken: string) => {
-		//	console.log('reconnect ' + reconnectionToken)
-		//	this.reconnectionToken = reconnectionToken
-		//	this.GameRoom = await this.client.reconnect(this.reconnectionToken)
-		//	this.setGameRoomListeners()
-		//	this.setGameRoomWorldListeners()
-		//})
+		this.LobbyRoom.onMessage('reconnect', async (reconnectionToken: string) => {
+			console.log('reconnect ' + reconnectionToken)
+			this.reconnectionToken = reconnectionToken
+			this.GameRoom = await this.client.reconnect(this.reconnectionToken)
+			this.setGameRoomListeners()
+			this.setGameRoomWorldListeners()
+		})
 	}
 
 	async setGameRoomListeners() {
@@ -365,7 +364,7 @@ export class NetworkManager {
 		this.setGameRoomWorldListeners()
 	}
 
-	sendInputs(message: ClientInputMessage) {
+	sendInputs(message: InputState) {
 		this.GameRoom.send('updateInputs', message)
 	}
 

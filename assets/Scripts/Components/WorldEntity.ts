@@ -85,6 +85,25 @@ export class WorldEntity {
 		this.tweenPool = new TweenPool()
 	}
 
+	moveToVector(position: Vec3) {
+		this.node.setPosition(position)
+	}
+
+	movePosition(x: number, y: number, z: number) {
+		this.node.setPosition(new Vec3(x, y, z))
+	}
+
+	moveInputs(inputs: InputState) {
+		const newPosition = this.node.getPosition()
+		if (inputs.upward && !inputs.downward) {
+			newPosition.y += this.state.baseSpeed
+			this.node.setPosition(newPosition)
+		} else if (!inputs.upward && inputs.downward) {
+			newPosition.y -= this.state.baseSpeed
+			this.node.setPosition(newPosition)
+		}
+	}
+
 	updateState() {
 		this.targetPosition.set(this.state.position.x, this.state.position.y, this.state.position.z)
 		this.node.setPosition(this.targetPosition)
@@ -114,16 +133,6 @@ export class WorldEntity {
 		// We are instantly updating the quaternion and size for now
 		this.node.setRotation(this.state.quaternion)
 		this.node.setScale(this.state.size)
-	}
-
-	moveInputs(inputs: InputState, dt: number) {
-		if (inputs.upward && !inputs.downward) {
-			this.body.setLinearVelocity(new Vec3(0, this.state.baseSpeed, 0))
-		} else if (!inputs.upward && inputs.downward) {
-			this.body.setLinearVelocity(new Vec3(0, -this.state.baseSpeed, 0))
-		} else {
-			this.body.setLinearVelocity(new Vec3(0, 0, 0))
-		}
 	}
 
 	destroy() {

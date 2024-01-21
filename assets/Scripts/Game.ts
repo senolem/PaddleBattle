@@ -5,9 +5,9 @@ import { WorldEntity } from 'db://assets/Scripts/Components/WorldEntity'
 import { Bind } from 'db://assets/Scripts/Components/Keybinds'
 import { GameState } from 'db://assets/Scripts/Enums/GameState'
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
-import { InputState, Inputs } from 'db://assets/Scripts/Components/Inputs'
-import { SimulationState } from 'db://assets/Scripts/Components/SimulationState'
-import { ClientInputMessage } from './Components/ClientInputMessage'
+import { Inputs } from 'db://assets/Scripts/Components/Inputs'
+import { SnapshotInterpolation } from 'db://assets/Scripts/Components/SnapshotInterpolation'
+import { Vault } from 'db://assets/Scripts/Components/Vault'
 const { ccclass, property } = _decorator
 
 @ccclass('Game')
@@ -25,8 +25,9 @@ export class Game extends Component {
 	private now: number
 	private lastServerState: any
 	private lastRecvServerStateTime: number = 0
-	private pendingInputs: Array<ClientInputMessage>
 
+	private snapshot: SnapshotInterpolation
+	private playerVault: Vault
 	// Keybinds and inputs
 	private keybinds: Map<Bind, KeyCode> = new Map<Bind, KeyCode>()
 	private inputs: Inputs = new Inputs()
@@ -103,7 +104,8 @@ export class Game extends Component {
 		this.entities = new Map<string, WorldEntity>()
 		this.lastServerState = Object.assign(NetworkManager.inst.getGameRoom.state)
 		this.lastRecvServerStateTime = Date.now()
-		this.pendingInputs = new Array<ClientInputMessage>()
+		this.snapshot = new SnapshotInterpolation(20) // Server's target update rate is 20
+		this.playerVault = new Vault()
 	}
 
 	protected onEnable(): void {
@@ -121,30 +123,65 @@ export class Game extends Component {
 			this.lastRecvServerStateTime = Date.now()
 			this.now += Date.now() - this.lastRecvServerStateTime
 
-			// Send inputs
-			const inputs = this.inputs.getInputs(dt)
-			if (!this.previousInputs.compare(inputs)) {
-				const message: ClientInputMessage = {
-					sn: ++NetworkManager.inst.lastSN,
-					inputs: [inputs]
-				}
-				this.pendingInputs.push(message)
-				NetworkManager.inst.sendInputs(message)
-
-				// Apply move locally
-				const localPlayerEntity = this.entities.get(this.paddleId)
-				localPlayerEntity.moveInputs(inputs, dt)
-			}
-
-			// Update entities
 			if (this.entities) {
-				this.entities.forEach((entity) => {
-					if (entity.id === this.paddleId || NetworkManager.inst.lastSN === 0) {
-						entity.updateState()
-					} else {
-						entity.tweenState()
-					}
-				})
+				this.clientPrediction()
+				this.serverReconciliation()
+				const snapshot = this.snapshot.calcInterpolation('x y z')
+				if (snapshot) {
+					snapshot.state.forEach((entityState) => {
+						const entity = this.entities.get(entityState.id)
+						if (entity) {
+							if (entity.id === this.paddleId || NetworkManager.inst.lastSN === 0) {
+								return
+							} else {
+								entity.moveToVector(entityState.position)
+							}
+						}
+					})
+				}
+			}
+		}
+	}
+
+	clientPrediction() {
+		// Send inputs
+		const inputs = this.inputs.getInputs()
+		if (!this.previousInputs.compare(inputs)) {
+			NetworkManager.inst.sendInputs(inputs)
+			this.previousInputs = this.inputs
+
+			// Apply move locally
+			const localPlayerEntity = this.entities.get(this.paddleId)
+			if (localPlayerEntity) {
+				localPlayerEntity.moveInputs(inputs)
+				const position = localPlayerEntity.node.getPosition()
+				this.playerVault.add(this.snapshot.snapshot.create([{ id: this.paddleId, position }]))
+			}
+		}
+
+	}
+
+	serverReconciliation() {
+		const inputs = this.inputs.getInputs()
+		const localPlayerEntity = this.entities.get(this.paddleId)
+		
+		if (localPlayerEntity) {
+			const serverSnapshot = this.snapshot.vault.get()
+			const playerSnapshot = this.playerVault.get(serverSnapshot.time, true)
+
+			if (serverSnapshot && playerSnapshot) {
+				const serverPos = serverSnapshot.state.filter(s => s.id === this.paddleId)[0]
+				const offsetX = playerSnapshot.state[0].position.x - serverPos.position.x
+				const offsetY = playerSnapshot.state[0].position.y - serverPos.position.y
+				const offsetZ = playerSnapshot.state[0].position.z - serverPos.position.z
+				const isMoving = inputs.upward || inputs.downward
+				const correction = isMoving ? 60 : 180
+				const newPosition = localPlayerEntity.node.getPosition()
+
+				newPosition.x -= offsetX / correction
+				newPosition.y -= offsetY / correction
+				newPosition.z -= offsetZ / correction
+				localPlayerEntity.node.setPosition(newPosition)
 			}
 		}
 	}
