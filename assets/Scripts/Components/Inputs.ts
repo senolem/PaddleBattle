@@ -11,9 +11,9 @@ export interface InputState {
 
 @ccclass('Inputs')
 export class Inputs {
-	upward: boolean
-	downward: boolean
-	powerup: boolean
+	upward: boolean = false
+	downward: boolean = false
+	powerup: boolean = false
 
 	public setKeyUp(key: Bind) {
 		switch (key) {
@@ -51,7 +51,7 @@ export class Inputs {
 		return (this.upward === other.upward && this.downward === other.downward && this.powerup === other.powerup)
 	}
 
-	getInputs(): InputState {
+	get getInputs(): InputState {
 		const state: InputState = {
 			upward: this.upward,
 			downward: this.downward,

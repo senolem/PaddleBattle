@@ -94,11 +94,11 @@ export class WorldEntity {
 	moveInputs(inputs: InputState) {
 		const newPosition = this.node.getPosition()
 		if (inputs.upward && !inputs.downward) {
-			newPosition.y += this.state.baseSpeed
-			this.node.setPosition(newPosition)
+			this.body.setLinearVelocity(new Vec3(0, this.state.baseSpeed, 0))
 		} else if (!inputs.upward && inputs.downward) {
-			newPosition.y -= this.state.baseSpeed
-			this.node.setPosition(newPosition)
+			this.body.setLinearVelocity(new Vec3(0, -this.state.baseSpeed, 0))
+		} else {
+			this.body.setLinearVelocity(new Vec3(0, 0, 0))
 		}
 	}
 
