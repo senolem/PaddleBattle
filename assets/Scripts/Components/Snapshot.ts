@@ -2,7 +2,7 @@ import { Quat, Vec3 } from "cc"
 import { EntityState } from "db://assets/Scripts/Components/EntityState"
 
 export type State = EntityState[]
-export type Value = number | string | Vec3 | Quat | undefined
+export type Value = number | string | Quat | undefined
 
 export interface Snapshot {
 	id: string

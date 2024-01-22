@@ -23,9 +23,9 @@ export class NetworkManager {
 	}
 
 	private node: Node
-	private hostname: string = "transcendance.fun"
-	private port: number = 443
-	private useSSL: boolean = true
+	private hostname: string = "127.0.0.1"
+	private port: number = 3000
+	private useSSL: boolean = false
 	private accessToken: string = "UNITY"
 	private reconnectionToken: string
 	private authorization: string

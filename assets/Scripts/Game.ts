@@ -26,7 +26,7 @@ export class Game extends Component {
 	private lastServerState: any
 	private lastRecvServerStateTime: number = 0
 
-	private snapshot: SnapshotInterpolation
+	private snapshotInterpolation: SnapshotInterpolation
 	private playerVault: Vault
 	// Keybinds and inputs
 	private keybinds: Map<Bind, KeyCode> = new Map<Bind, KeyCode>()
@@ -104,7 +104,7 @@ export class Game extends Component {
 		this.entities = new Map<string, WorldEntity>()
 		this.lastServerState = Object.assign(NetworkManager.inst.getGameRoom.state)
 		this.lastRecvServerStateTime = Date.now()
-		this.snapshot = new SnapshotInterpolation(20) // Server's target update rate is 20
+		this.snapshotInterpolation = new SnapshotInterpolation(20) // Server's target update rate is 20
 		this.playerVault = new Vault()
 	}
 
@@ -126,7 +126,7 @@ export class Game extends Component {
 			if (this.entities) {
 				this.clientPrediction()
 				this.serverReconciliation()
-				const snapshot = this.snapshot.calcInterpolation('x y z')
+				const snapshot = this.snapshotInterpolation.calcInterpolation('x y z')
 				if (snapshot) {
 					snapshot.state.forEach((entityState) => {
 						const entity = this.entities.get(entityState.id)
@@ -154,8 +154,23 @@ export class Game extends Component {
 			const localPlayerEntity = this.entities.get(this.paddleId)
 			if (localPlayerEntity) {
 				localPlayerEntity.moveInputs(inputs)
-				const position = localPlayerEntity.node.getPosition()
-				this.playerVault.add(this.snapshot.snapshot.create([{ id: this.paddleId, position }]))
+				let position = localPlayerEntity.node.getPosition()
+				let quaternion = localPlayerEntity.node.getRotation()
+				let size = localPlayerEntity.node.getScale()
+				let velocity
+				let angularVelocity
+
+				localPlayerEntity.body.getLinearVelocity(velocity)
+				localPlayerEntity.body.getAngularVelocity(angularVelocity)
+
+				this.playerVault.add(this.snapshotInterpolation.snapshot.create([{
+					id: localPlayerEntity.id,
+					position,
+					quaternion,
+					size,
+					velocity,
+					angularVelocity
+				}]))
 			}
 		}
 
@@ -166,7 +181,7 @@ export class Game extends Component {
 		const localPlayerEntity = this.entities.get(this.paddleId)
 		
 		if (localPlayerEntity) {
-			const serverSnapshot = this.snapshot.vault.get()
+			const serverSnapshot = this.snapshotInterpolation.vault.get()
 			const playerSnapshot = this.playerVault.get(serverSnapshot.time, true)
 
 			if (serverSnapshot && playerSnapshot) {

@@ -1,7 +1,8 @@
-import { Snapshot, InterpolatedSnapshot, Value, State, Entity } from 'db://assets/Scripts/Components/Snapshot'
+import { Snapshot, InterpolatedSnapshot, Value, State } from 'db://assets/Scripts/Components/Snapshot'
 import { Vault } from 'db://assets/Scripts/Components/Vault'
 import { degreeLerp, lerp, radianLerp } from 'db://assets/Scripts/Components/Lerp'
-import { quatSlerp } from 'db://assets/Scripts/Components/SLerp'
+import { quatSlerp } from 'db://assets/Scripts/Components/Slerp'
+import { EntityState } from './EntityState'
 
 interface Config {
   autoCorrectTimeOffset?: boolean
@@ -55,14 +56,14 @@ export class SnapshotInterpolation {
   public get snapshot() {
     return {
       /** Create the snapshot on the server. */
-      create: (state: State | { [key: string]: State }): Snapshot => SnapshotInterpolation.CreateSnapshot(state),
+      create: (state: State): Snapshot => SnapshotInterpolation.CreateSnapshot(state),
       /** Add the snapshot you received from the server to automatically calculate the interpolation with calcInterpolation() */
       add: (snapshot: Snapshot): void => this.addSnapshot(snapshot)
     }
   }
 
   /** Create a new Snapshot */
-  public static CreateSnapshot(state: State | { [key: string]: State }): Snapshot {
+  public static CreateSnapshot(state: State) {
     const check = (state: State) => {
       // check if state is an array
       if (!Array.isArray(state)) throw new Error('You have to pass an Array to createSnapshot()')
@@ -180,9 +181,9 @@ export class SnapshotInterpolation {
 
     let tmpSnapshot: Snapshot = JSON.parse(JSON.stringify({ ...newer, state: newerState }))
 
-    newerState.forEach((e: Entity, i: number) => {
+    newerState.forEach((e: EntityState, i: number) => {
       const id = e.id
-      const other: Entity | undefined = olderState.find((e: any) => e.id === id)
+      const other: EntityState | undefined = olderState.find((e: any) => e.id === id)
       if (!other) return
 
       params.forEach(p => {
