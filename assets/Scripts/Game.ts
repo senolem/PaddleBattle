@@ -6,8 +6,6 @@ import { Bind } from 'db://assets/Scripts/Components/Keybinds'
 import { GameState } from 'db://assets/Scripts/Enums/GameState'
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
 import { InputState, Inputs } from 'db://assets/Scripts/Components/Inputs'
-import { SnapshotInterpolation } from 'db://assets/Scripts/Components/SnapshotInterpolation'
-import { Vault } from 'db://assets/Scripts/Components/Vault'
 import { EntityState } from './Components/EntityState'
 const { ccclass, property } = _decorator
 
@@ -25,8 +23,6 @@ export class Game extends Component {
 	// Networking stuff
 	private lastServerTick: number
 
-	private snapshotInterpolation: SnapshotInterpolation
-	private playerVault: Vault
 	// Keybinds and inputs
 	private keybinds: Map<Bind, KeyCode> = new Map<Bind, KeyCode>()
 	private inputs: Inputs = new Inputs()
@@ -101,8 +97,6 @@ export class Game extends Component {
 		this.leftScore = 0
 		this.rightScore = 0
 		this.entities = new Map<string, WorldEntity>()
-		this.snapshotInterpolation = new SnapshotInterpolation(20) // Server's target update rate is 20
-		this.playerVault = new Vault()
 		this.previousInputs = { upward: false, downward: false, powerup: false }
 	}
 
@@ -118,95 +112,8 @@ export class Game extends Component {
 
 	protected update(dt: number): void {
 		if (NetworkManager.inst && NetworkManager.inst.getGameRoom && NetworkManager.inst.getGameRoom.state.gameState === GameState.Playing) {
-
-			const serverTick = NetworkManager.inst.getGameRoom.state.tick
-			if (serverTick != this.lastServerTick) {
-				this.lastServerTick = serverTick
-				const entitiesStates: EntityState[] = []
-				this.entities.forEach((entity) => {
-					entitiesStates.push(entity.state)
-				})
-				const snapshot = this.snapshotInterpolation.snapshot.create(entitiesStates)
-				this.snapshotInterpolation.snapshot.add(snapshot)
-			}
-
 			if (this.entities) {
-				this.clientPrediction()
-				this.serverReconciliation()
-				const snapshot = this.snapshotInterpolation.calcInterpolation('x y z')
-				if (snapshot) {
-					snapshot.state.forEach((entityState) => {
-						const entity = this.entities.get(entityState.id)
-						if (entity) {
-							if (entity.id === this.paddleId) {
-								return
-							} else {
-								entity.moveToVector(entityState.position)
-							}
-						}
-					})
-				}
-			}
-		}
-	}
-
-	clientPrediction() {
-		// Send inputs
-		if (!this.inputs.compare(this.previousInputs)) {
-			const inputs = this.inputs.getInputs
-			NetworkManager.inst.sendInputs(inputs)
-			this.previousInputs = inputs
-
-			// Apply move locally
-			const localPlayerEntity = this.entities.get(this.paddleId)
-			if (localPlayerEntity) {
-				localPlayerEntity.moveInputs(inputs)
-				const position = localPlayerEntity.node.getPosition()
-				const quaternion = localPlayerEntity.node.getRotation()
-				const size = localPlayerEntity.node.getScale()
-				const velocity: Vec3 = new Vec3()
-				const angularVelocity: Vec3 = new Vec3()
-
-				localPlayerEntity.body.getLinearVelocity(velocity)
-				localPlayerEntity.body.getAngularVelocity(angularVelocity)
-
-				this.playerVault.add(this.snapshotInterpolation.snapshot.create([{
-					id: localPlayerEntity.id,
-					position,
-					quaternion,
-					size,
-					velocity,
-					angularVelocity
-				}]))
-			}
-		}
-
-	}
-	serverReconciliation() {
-		const inputs = this.inputs.getInputs
-		const localPlayerEntity = this.entities.get(this.paddleId)
-	
-		if (localPlayerEntity) {
-			const serverSnapshot = this.snapshotInterpolation.vault.get()
-			if (serverSnapshot) {
-				const playerSnapshot = this.playerVault.get(serverSnapshot.time, true)
-	
-				if (playerSnapshot) {
-					const serverPos = serverSnapshot.state.find(s => s.id === this.paddleId)
-					const offsetX = playerSnapshot.state[0].position.x - serverPos.position.x
-					const offsetY = playerSnapshot.state[0].position.y - serverPos.position.y
-					const offsetZ = playerSnapshot.state[0].position.z - serverPos.position.z
-					
-					const isMoving = inputs.upward || inputs.downward
-					const correction = isMoving ? 60 : 180
-					const newPosition = localPlayerEntity.node.getPosition()
-	
-					newPosition.x -= offsetX / correction
-					newPosition.y -= offsetY / correction
-					newPosition.z -= offsetZ / correction
-	
-					localPlayerEntity.node.setPosition(newPosition)
-				}
+				// stuff
 			}
 		}
 	}
