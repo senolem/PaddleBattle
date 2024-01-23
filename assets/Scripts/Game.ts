@@ -154,7 +154,6 @@ export class Game extends Component {
 		// Send inputs
 		if (!this.inputs.compare(this.previousInputs)) {
 			const inputs = this.inputs.getInputs
-			console.log(`sending ${inputs.upward} ${inputs.downward}`)
 			NetworkManager.inst.sendInputs(inputs)
 			this.previousInputs = inputs
 
@@ -197,22 +196,14 @@ export class Game extends Component {
 					const offsetX = playerSnapshot.state[0].position.x - serverPos.position.x
 					const offsetY = playerSnapshot.state[0].position.y - serverPos.position.y
 					const offsetZ = playerSnapshot.state[0].position.z - serverPos.position.z
-	
-					const offsetMagnitude = Math.sqrt(offsetX * offsetX + offsetY * offsetY + offsetZ * offsetZ)
 					
 					const isMoving = inputs.upward || inputs.downward
 					const correction = isMoving ? 60 : 180
 					const newPosition = localPlayerEntity.node.getPosition()
 	
-					if (offsetMagnitude > 10) {
-						newPosition.x = playerSnapshot.state[0].position.x
-						newPosition.y = playerSnapshot.state[0].position.y
-						newPosition.z = playerSnapshot.state[0].position.z
-					} else {
-						newPosition.x -= offsetX / correction
-						newPosition.y -= offsetY / correction
-						newPosition.z -= offsetZ / correction
-					}
+					newPosition.x -= offsetX / correction
+					newPosition.y -= offsetY / correction
+					newPosition.z -= offsetZ / correction
 	
 					localPlayerEntity.node.setPosition(newPosition)
 				}
