@@ -22,11 +22,13 @@ export class Game extends Component {
 
 	// Networking stuff
 	private lastServerTick: number
+	private lastServerUpdate: number
+	private inputSequence: number
+	private pendingInputs: Array<InputState>
 
 	// Keybinds and inputs
 	private keybinds: Map<Bind, KeyCode> = new Map<Bind, KeyCode>()
 	private inputs: Inputs = new Inputs()
-	private previousInputs: InputState
 
 	// Score frame
 	private scoreFrameNode: Node
@@ -97,7 +99,10 @@ export class Game extends Component {
 		this.leftScore = 0
 		this.rightScore = 0
 		this.entities = new Map<string, WorldEntity>()
-		this.previousInputs = { upward: false, downward: false, powerup: false }
+		this.lastServerTick = 0
+		this.lastServerUpdate = 0
+		this.inputSequence = 0
+		this.pendingInputs = new Array<InputState>()
 	}
 
 	protected onEnable(): void {
@@ -112,9 +117,71 @@ export class Game extends Component {
 
 	protected update(dt: number): void {
 		if (NetworkManager.inst && NetworkManager.inst.getGameRoom && NetworkManager.inst.getGameRoom.state.gameState === GameState.Playing) {
-			if (this.entities) {
-				// stuff
+			// Update entities
+			if (this.lastServerTick != NetworkManager.inst.getGameRoom.state.tick) {
+				this.lastServerTick = NetworkManager.inst.getGameRoom.state.tick
+				if (this.entities) {
+					this.entities.forEach((entity) => {
+						if (entity.id === this.paddleId) {
+							entity.updateState()
+							const lastProcessedInput = NetworkManager.inst.getOwnPlayer.lastProcessedInput
+							this.pendingInputs.forEach((inputMessage, index) => {
+								if (inputMessage.sequence <= lastProcessedInput) {
+									this.pendingInputs.splice(index, 1)
+								} else {
+									entity.applyInput(inputMessage)
+								}
+							})
+						} else {
+							const position = entity.state.position
+							entity.positionBuffer.push({ timestamp: Date.now(), position: new Vec3(position.x, position.y, position.z) })
+						}
+					})
+				}
 			}
+
+			// Update inputs
+			let inputState: InputState = {
+				upward: false,
+				downward: false,
+				powerup: false,
+				sequence: 0
+			}
+
+			if (this.inputs.getInputs.upward && !this.inputs.getInputs.downward) {
+				inputState.upward = true
+			} else if (!this.inputs.getInputs.upward && this.inputs.getInputs.downward) {
+				inputState.downward = true
+			}
+			inputState.powerup = this.inputs.getInputs.powerup
+			inputState.sequence = ++this.inputSequence
+
+			NetworkManager.inst.sendInputs(this.inputs.getInputs)
+			this.pendingInputs.push(inputState)
+
+			// Interpolate entities
+			const now = Date.now()
+			const renderTimestamp = now - (1000.0 / 20) // Server sends updates at 20FPS
+
+			this.entities.forEach((entity) => {
+				if (entity.id !== this.paddleId) {
+					while (entity.positionBuffer.length >= 2 && entity.positionBuffer[1].timestamp <= renderTimestamp) {
+						entity.positionBuffer.shift()
+					}
+
+					if (entity.positionBuffer.length >= 2 && entity.positionBuffer[0].timestamp <= renderTimestamp && renderTimestamp <= entity.positionBuffer[1].timestamp) {
+						const pos0 = entity.positionBuffer[0].position
+						const pos1 = entity.positionBuffer[1].position
+						const timestamp0 = entity.positionBuffer[0].timestamp
+						const timestamp1 = entity.positionBuffer[0].timestamp
+
+						const newX = pos0.x + (pos1.x - pos0.x) * (renderTimestamp - timestamp0) / (timestamp1 - timestamp0)
+						const newY = pos0.y + (pos1.y - pos0.y) * (renderTimestamp - timestamp0) / (timestamp1 - timestamp0)
+						const newZ = pos0.z + (pos1.z - pos0.z) * (renderTimestamp - timestamp0) / (timestamp1 - timestamp0)
+						entity.node.setPosition(new Vec3(newX, newY, newZ))
+					}
+				}
+			})
 		}
 	}
 

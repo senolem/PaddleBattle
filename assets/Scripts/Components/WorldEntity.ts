@@ -1,10 +1,14 @@
-import { _decorator, BoxCollider, Collider, director, instantiate, lerp, Mesh, MeshRenderer, Node, physics, RigidBody, SphereCollider, tween, Vec3 } from "cc"
-import { InputState } from "db://assets/Scripts/Components/Inputs"
+import { _decorator, BoxCollider, Collider, director, Input, instantiate, lerp, Mesh, MeshRenderer, Node, physics, RigidBody, SphereCollider, tween, Vec3 } from "cc"
+import { Inputs, InputState } from "db://assets/Scripts/Components/Inputs"
 import { BodyType } from "db://assets/Scripts/Enums/BodyType"
 import { ShapeType } from "db://assets/Scripts/Enums/ShapeType"
 import { GameManager } from "db://assets/Scripts/Managers/GameManager"
-import { TweenPool } from "db://assets/Scripts/Components/TweenPool"
 const { ccclass } = _decorator
+
+interface PositionHistory {
+	timestamp: number
+	position: Vec3
+}
 
 @ccclass('WorldEntity')
 export class WorldEntity {
@@ -15,7 +19,7 @@ export class WorldEntity {
 	id: string
 	body: RigidBody
 	collider: Collider
-	targetPosition: Vec3
+	positionBuffer: Array<PositionHistory>
 
 	constructor(state: any, id: string, parent: Node) {
 		const existingNode = parent.getChildByName(id)
@@ -80,7 +84,8 @@ export class WorldEntity {
 		// this.body.fixedRotation = this.state.fixedRotation
 		// No fixed rotation available?
 		this.body.useGravity = false
-		this.targetPosition = new Vec3()
+
+		this.positionBuffer = new Array<PositionHistory>()
 	}
 
 	moveToVector(position: Vec3) {
@@ -91,8 +96,7 @@ export class WorldEntity {
 		this.node.setPosition(new Vec3(x, y, z))
 	}
 
-	moveInputs(inputs: InputState) {
-		const newPosition = this.node.getPosition()
+	applyInput(inputs: InputState) {
 		if (inputs.upward && !inputs.downward) {
 			this.body.setLinearVelocity(new Vec3(0, this.state.baseSpeed, 0))
 		} else if (!inputs.upward && inputs.downward) {
@@ -103,10 +107,7 @@ export class WorldEntity {
 	}
 
 	updateState() {
-		this.targetPosition.set(this.state.position.x, this.state.position.y, this.state.position.z)
-		this.node.setPosition(this.targetPosition)
-
-		// We are instantly updating the quaternion and size for now
+		this.node.setPosition(this.state.position)
 		this.node.setRotation(this.state.quaternion)
 		this.node.setScale(this.state.size)
 	}

@@ -7,6 +7,7 @@ export interface InputState {
 	upward: boolean
 	downward: boolean
 	powerup: boolean
+	sequence: number
 }
 
 @ccclass('Inputs')
@@ -56,6 +57,7 @@ export class Inputs {
 			upward: this.upward,
 			downward: this.downward,
 			powerup: this.powerup,
+			sequence: 0
 		}
 		return state
 	}
