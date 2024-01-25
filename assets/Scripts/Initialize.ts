@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, director, Canvas, view, Layers } from 'cc'
+import { _decorator, Component, Node, director, Canvas } from 'cc'
 import { GameManager } from 'db://assets/Scripts/Managers/GameManager'
 import { UIManager } from 'db://assets/Scripts/Managers/UIManager'
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'

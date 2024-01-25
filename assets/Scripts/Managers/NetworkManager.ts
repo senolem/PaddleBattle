@@ -35,6 +35,7 @@ export class NetworkManager {
 	private startGameCallback: () => void
 	private entitiesOnAddCallback: () => void
 	private entitiesOnRemoveCallback: () => void
+	private reconnecting: boolean = false
 
 	constructor() {
 		// Create a new NetworkManager node and add it to the scene
@@ -56,6 +57,7 @@ export class NetworkManager {
 				this.LobbyRoom = await this.client.join("LobbyRoom", { accessToken: this.accessToken })
 
 				this.setLobbyRoomListeners()
+				this.reconnecting = false
 
 				if ((!this.GameRoom || !this.GameRoom.connection.isOpen) && UIManager.inst.UIState === UIState.RoomMenu) {
 					UIManager.inst.switchUIState(UIState.PlayMenu)
@@ -89,10 +91,14 @@ export class NetworkManager {
 		}
 	}
 
-	async connectToGame(reservation: any) {
+	async connectToGame(reservation: any, reconnect = false) {
 		try {
-			this.GameRoom = await this.client.consumeSeatReservation(reservation)
-			this.reconnectionToken = this.GameRoom.reconnectionToken
+			if (reconnect) {
+				this.GameRoom = await this.client.reconnect(this.reconnectionToken)
+			} else {
+				this.GameRoom = await this.client.consumeSeatReservation(reservation)
+				this.reconnectionToken = this.GameRoom.reconnectionToken
+			}
 
 			this.setGameRoomListeners()
 
@@ -133,6 +139,7 @@ export class NetworkManager {
 		})
 
 		this.LobbyRoom.onMessage('status', (status) => {
+			console.log(status.title + ' : ' + status.message)
 			UIManager.inst.showStatus(status.title, status.message)
 		})
 
@@ -171,13 +178,13 @@ export class NetworkManager {
 			UIManager.inst.switchUIState(UIState.PlayMenu)
 		})
 
-		// Currently not working, always says that the room has been disposed. Colyseus bug?
 		this.LobbyRoom.onMessage('reconnect', async (reconnectionToken: string) => {
-			console.log('reconnect ' + reconnectionToken)
+			this.reconnecting = true
 			this.reconnectionToken = reconnectionToken
-			this.GameRoom = await this.client.reconnect(this.reconnectionToken)
-			this.setGameRoomListeners()
-			this.setGameRoomWorldListeners()
+			UIManager.inst.switchUIState(UIState.RoomMenu)
+			this.connectToGame(null, true)
+			UIManager.inst.loadingScreen.show()
+			UIManager.inst.loadingScreen.setLoadingInfo('Waiting for server')
 		})
 	}
 
@@ -220,6 +227,10 @@ export class NetworkManager {
 					UIManager.inst.mapsScrollView.addMap(value)
 				})
 				UIManager.inst.mapsScrollView.setSelectedMap(this.GameRoom.state.selectedMap)
+			}
+			if (this.reconnecting) {
+				this.reconnecting = false
+				this.GameRoom.send('clientReconnectedReady')
 			}
 		})
 
