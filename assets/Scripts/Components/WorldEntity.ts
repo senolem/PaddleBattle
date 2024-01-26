@@ -16,7 +16,6 @@ export class WorldEntity {
 	body: RigidBody
 	collider: Collider
 	targetPosition: Vec3
-	tweenPool: TweenPool
 
 	constructor(state: any, id: string, parent: Node) {
 		const existingNode = parent.getChildByName(id)
@@ -82,7 +81,25 @@ export class WorldEntity {
 		// No fixed rotation available?
 		this.body.useGravity = false
 		this.targetPosition = new Vec3()
-		this.tweenPool = new TweenPool()
+	}
+
+	moveToVector(position: Vec3) {
+		this.node.setPosition(position)
+	}
+
+	movePosition(x: number, y: number, z: number) {
+		this.node.setPosition(new Vec3(x, y, z))
+	}
+
+	moveInputs(inputs: InputState) {
+		const newPosition = this.node.getPosition()
+		if (inputs.upward && !inputs.downward) {
+			this.body.setLinearVelocity(new Vec3(0, this.state.baseSpeed, 0))
+		} else if (!inputs.upward && inputs.downward) {
+			this.body.setLinearVelocity(new Vec3(0, -this.state.baseSpeed, 0))
+		} else {
+			this.body.setLinearVelocity(new Vec3(0, 0, 0))
+		}
 	}
 
 	updateState() {
@@ -94,40 +111,7 @@ export class WorldEntity {
 		this.node.setScale(this.state.size)
 	}
 
-	tweenState() {
-		const newPos = new Vec3(this.state.position.x, this.state.position.y, this.state.position.z)
-		if (!this.targetPosition.equals(newPos)) {
-			this.tweenPool.clear()
-			this.node.setPosition(this.targetPosition)
-
-			this.tweenPool.add(tween(this.node.position).to(1 / 20, newPos, {
-				onUpdate: (target: Vec3) => {
-					if (this.node) {
-						this.node.setPosition(target)
-					}
-				}
-			}).start())
-
-			this.targetPosition.set(newPos)
-		}
-		
-		// We are instantly updating the quaternion and size for now
-		this.node.setRotation(this.state.quaternion)
-		this.node.setScale(this.state.size)
-	}
-
-	moveInputs(inputs: InputState, dt: number) {
-		if (inputs.upward && !inputs.downward) {
-			this.body.setLinearVelocity(new Vec3(0, this.state.baseSpeed, 0))
-		} else if (!inputs.upward && inputs.downward) {
-			this.body.setLinearVelocity(new Vec3(0, -this.state.baseSpeed, 0))
-		} else {
-			this.body.setLinearVelocity(new Vec3(0, 0, 0))
-		}
-	}
-
 	destroy() {
-		this.tweenPool.clear()
 		this.node.destroy()
 	}
 }

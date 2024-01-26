@@ -6,8 +6,7 @@ import { Bind } from 'db://assets/Scripts/Components/Keybinds'
 import { GameState } from 'db://assets/Scripts/Enums/GameState'
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
 import { InputState, Inputs } from 'db://assets/Scripts/Components/Inputs'
-import { SimulationState } from 'db://assets/Scripts/Components/SimulationState'
-import { ClientInputMessage } from './Components/ClientInputMessage'
+import { EntityState } from './Components/EntityState'
 const { ccclass, property } = _decorator
 
 @ccclass('Game')
@@ -22,15 +21,12 @@ export class Game extends Component {
 	private paddleId: string
 
 	// Networking stuff
-	private now: number
-	private lastServerState: any
-	private lastRecvServerStateTime: number = 0
-	private pendingInputs: Array<ClientInputMessage>
+	private lastServerTick: number
 
 	// Keybinds and inputs
 	private keybinds: Map<Bind, KeyCode> = new Map<Bind, KeyCode>()
 	private inputs: Inputs = new Inputs()
-	private previousInputs: Inputs = new Inputs()
+	private previousInputs: InputState
 
 	// Score frame
 	private scoreFrameNode: Node
@@ -101,9 +97,7 @@ export class Game extends Component {
 		this.leftScore = 0
 		this.rightScore = 0
 		this.entities = new Map<string, WorldEntity>()
-		this.lastServerState = Object.assign(NetworkManager.inst.getGameRoom.state)
-		this.lastRecvServerStateTime = Date.now()
-		this.pendingInputs = new Array<ClientInputMessage>()
+		this.previousInputs = { upward: false, downward: false, powerup: false }
 	}
 
 	protected onEnable(): void {
@@ -118,33 +112,8 @@ export class Game extends Component {
 
 	protected update(dt: number): void {
 		if (NetworkManager.inst && NetworkManager.inst.getGameRoom && NetworkManager.inst.getGameRoom.state.gameState === GameState.Playing) {
-			this.lastRecvServerStateTime = Date.now()
-			this.now += Date.now() - this.lastRecvServerStateTime
-
-			// Send inputs
-			const inputs = this.inputs.getInputs(dt)
-			if (!this.previousInputs.compare(inputs)) {
-				const message: ClientInputMessage = {
-					sn: ++NetworkManager.inst.lastSN,
-					inputs: [inputs]
-				}
-				this.pendingInputs.push(message)
-				NetworkManager.inst.sendInputs(message)
-
-				// Apply move locally
-				const localPlayerEntity = this.entities.get(this.paddleId)
-				localPlayerEntity.moveInputs(inputs, dt)
-			}
-
-			// Update entities
 			if (this.entities) {
-				this.entities.forEach((entity) => {
-					if (entity.id === this.paddleId || NetworkManager.inst.lastSN === 0) {
-						entity.updateState()
-					} else {
-						entity.tweenState()
-					}
-				})
+				// stuff
 			}
 		}
 	}

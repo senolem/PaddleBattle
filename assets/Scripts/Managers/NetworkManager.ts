@@ -10,8 +10,7 @@ import { Game } from 'db://assets/Scripts/Game'
 import { AudioManager } from 'db://assets/Scripts/Managers/AudioManager'
 import { GameState } from 'db://assets/Scripts/Enums/GameState'
 import { EndGameScreenData } from 'db://assets/Scripts/Components/EndGameScreenData'
-import { InputState, Inputs } from 'db://assets/Scripts/Components/Inputs'
-import { ClientInputMessage } from '../Components/ClientInputMessage'
+import { InputState } from 'db://assets/Scripts/Components/Inputs'
 
 @ccclass('NetworkManager')
 export class NetworkManager {
@@ -24,9 +23,9 @@ export class NetworkManager {
 	}
 
 	private node: Node
-	private hostname: string = "transcendance.fun"
-	private port: number = 443
-	private useSSL: boolean = true
+	private hostname: string = "127.0.0.1"
+	private port: number = 3000
+	private useSSL: boolean = false
 	private accessToken: string = "UNITY"
 	private reconnectionToken: string
 	private authorization: string
@@ -36,7 +35,7 @@ export class NetworkManager {
 	private startGameCallback: () => void
 	private entitiesOnAddCallback: () => void
 	private entitiesOnRemoveCallback: () => void
-	public lastSN = 0
+	private reconnecting: boolean = false
 
 	constructor() {
 		// Create a new NetworkManager node and add it to the scene
@@ -58,6 +57,7 @@ export class NetworkManager {
 				this.LobbyRoom = await this.client.join("LobbyRoom", { accessToken: this.accessToken })
 
 				this.setLobbyRoomListeners()
+				this.reconnecting = false
 
 				if ((!this.GameRoom || !this.GameRoom.connection.isOpen) && UIManager.inst.UIState === UIState.RoomMenu) {
 					UIManager.inst.switchUIState(UIState.PlayMenu)
@@ -91,10 +91,14 @@ export class NetworkManager {
 		}
 	}
 
-	async connectToGame(reservation: any) {
+	async connectToGame(reservation: any, reconnect = false) {
 		try {
-			this.GameRoom = await this.client.consumeSeatReservation(reservation)
-			this.reconnectionToken = this.GameRoom.reconnectionToken
+			if (reconnect) {
+				this.GameRoom = await this.client.reconnect(this.reconnectionToken)
+			} else {
+				this.GameRoom = await this.client.consumeSeatReservation(reservation)
+				this.reconnectionToken = this.GameRoom.reconnectionToken
+			}
 
 			this.setGameRoomListeners()
 
@@ -135,6 +139,7 @@ export class NetworkManager {
 		})
 
 		this.LobbyRoom.onMessage('status', (status) => {
+			console.log(status.title + ' : ' + status.message)
 			UIManager.inst.showStatus(status.title, status.message)
 		})
 
@@ -173,14 +178,14 @@ export class NetworkManager {
 			UIManager.inst.switchUIState(UIState.PlayMenu)
 		})
 
-		// Currently not working, always says that the room has been disposed. Colyseus bug?
-		//this.LobbyRoom.onMessage('reconnect', async (reconnectionToken: string) => {
-		//	console.log('reconnect ' + reconnectionToken)
-		//	this.reconnectionToken = reconnectionToken
-		//	this.GameRoom = await this.client.reconnect(this.reconnectionToken)
-		//	this.setGameRoomListeners()
-		//	this.setGameRoomWorldListeners()
-		//})
+		this.LobbyRoom.onMessage('reconnect', async (reconnectionToken: string) => {
+			this.reconnecting = true
+			this.reconnectionToken = reconnectionToken
+			UIManager.inst.switchUIState(UIState.RoomMenu)
+			this.connectToGame(null, true)
+			UIManager.inst.loadingScreen.show()
+			UIManager.inst.loadingScreen.setLoadingInfo('Waiting for server')
+		})
 	}
 
 	async setGameRoomListeners() {
@@ -222,6 +227,13 @@ export class NetworkManager {
 					UIManager.inst.mapsScrollView.addMap(value)
 				})
 				UIManager.inst.mapsScrollView.setSelectedMap(this.GameRoom.state.selectedMap)
+			}
+			if (this.reconnecting) {
+				this.reconnecting = false
+				director.loadScene('Game', () => {
+					this.loadGame()
+					this.GameRoom.send('clientReconnectedReady')
+				})
 			}
 		})
 
@@ -358,14 +370,13 @@ export class NetworkManager {
 		GameManager.inst.game.setLeftPlayer(GameManager.inst.avatarCache.get(leftPlayer.avatarUrl), leftPlayer.username)
 		GameManager.inst.game.setRightPlayer(GameManager.inst.avatarCache.get(rightPlayer.avatarUrl), rightPlayer.username)
 		GameManager.inst.game.setScores(leftPlayer.score, rightPlayer.score)
-		this.lastSN = 0
 		this.GameRoom.send('clientReady')
 		UIManager.inst.loadingScreen.setLoadingInfo('Waiting for other players')
 
 		this.setGameRoomWorldListeners()
 	}
 
-	sendInputs(message: ClientInputMessage) {
+	sendInputs(message: InputState) {
 		this.GameRoom.send('updateInputs', message)
 	}
 

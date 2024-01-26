@@ -5,5 +5,6 @@ export enum EntityType {
 	RightWall,
 	LeftPaddle,
 	RightPaddle,
-	Ball
+	Ball,
+	Default
 }
