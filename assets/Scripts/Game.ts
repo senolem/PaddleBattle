@@ -113,7 +113,9 @@ export class Game extends Component {
 	protected update(dt: number): void {
 		if (NetworkManager.inst && NetworkManager.inst.getGameRoom && NetworkManager.inst.getGameRoom.state.gameState === GameState.Playing) {
 			if (this.entities) {
-				// stuff
+				this.entities.forEach((entity) => {
+					entity.updateState()
+				})
 			}
 		}
 	}
