@@ -112,10 +112,23 @@ export class Game extends Component {
 
 	protected update(dt: number): void {
 		if (NetworkManager.inst && NetworkManager.inst.getGameRoom && NetworkManager.inst.getGameRoom.state.gameState === GameState.Playing) {
+			// Update entities
 			if (this.entities) {
 				this.entities.forEach((entity) => {
 					entity.updateState()
 				})
+			}
+
+			// Send inputs
+			const inputs = this.inputs.getInputs
+			if (!this.inputs.compare(this.previousInputs)) {
+				NetworkManager.inst.sendInputs(inputs)
+
+				// Apply move locally
+				const localPlayerEntity = this.entities.get(this.paddleId)
+				if (localPlayerEntity) {
+					localPlayerEntity.moveInputs(inputs)
+				}
 			}
 		}
 	}

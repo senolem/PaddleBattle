@@ -3,7 +3,6 @@ import { InputState } from "db://assets/Scripts/Components/Inputs"
 import { BodyType } from "db://assets/Scripts/Enums/BodyType"
 import { ShapeType } from "db://assets/Scripts/Enums/ShapeType"
 import { GameManager } from "db://assets/Scripts/Managers/GameManager"
-import { TweenPool } from "db://assets/Scripts/Components/TweenPool"
 const { ccclass } = _decorator
 
 @ccclass('WorldEntity')
