@@ -230,7 +230,10 @@ export class NetworkManager {
 			}
 			if (this.reconnecting) {
 				this.reconnecting = false
-				this.GameRoom.send('clientReconnectedReady')
+				director.loadScene('Game', () => {
+					this.loadGame()
+					this.GameRoom.send('clientReconnectedReady')
+				})
 			}
 		})
 
