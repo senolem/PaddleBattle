@@ -122,6 +122,7 @@ export class Game extends Component {
 			// Send inputs
 			const inputs = this.inputs.getInputs
 			if (!this.inputs.compare(this.previousInputs)) {
+				this.previousInputs = inputs
 				NetworkManager.inst.sendInputs(inputs)
 
 				// Apply move locally
