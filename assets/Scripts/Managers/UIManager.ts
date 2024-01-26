@@ -209,7 +209,7 @@ export class UIManager {
 
 	showNotification(text: string) {
 		const notificationNode = instantiate(this.prefabs.get('Notification'))
-		notificationNode.layer = 1 << 17
+		notificationNode.layer = 1 << 19
 		notificationNode.parent = this.notifications
 
 		const notification = notificationNode.getComponent(Notification)
@@ -227,7 +227,7 @@ export class UIManager {
 		}
 
 		const networkErrorNode = instantiate(this.prefabs.get('NetworkError'))
-		networkErrorNode.layer = 1 << 17
+		networkErrorNode.layer = 1 << 19
 		networkErrorNode.parent = this.notifications
 
 		const networkError = networkErrorNode.getComponent(NetworkError)
@@ -236,7 +236,7 @@ export class UIManager {
 
 	showEndGameScreen(data: EndGameScreenData) {
 		const endGameScreenNode = instantiate(this.prefabs.get('EndGameScreen'))
-		endGameScreenNode.layer = 1 << 17
+		endGameScreenNode.layer = 1 << 19
 		endGameScreenNode.parent = this.notifications
 		const endGame = endGameScreenNode.getComponent(EndGameScreen)
 		endGame.init(data)
@@ -244,7 +244,7 @@ export class UIManager {
 
 	showStatus(title: string, message: string) {
 		const statusBoxNode = instantiate(this.prefabs.get('StatusBox'))
-		statusBoxNode.layer = 1 << 17
+		statusBoxNode.layer = 1 << 19
 		statusBoxNode.parent = this.status
 
 		const statusBox = statusBoxNode.getComponent(StatusBox)
