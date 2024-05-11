@@ -10,6 +10,7 @@
 </p>
 
 Repository for my transcendance' game. Based on Cocos Creator.
+- Multiplayer using Colyseus (amazing SDK)
 - Matchmaking system
 - Rooms system
 - 1v1 pong game, with integrations between frontend and game
