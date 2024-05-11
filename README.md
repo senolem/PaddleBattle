@@ -9,4 +9,9 @@
 </table>
 </p>
 
-Repository for my transcendance' game
+Repository for my transcendance' game. Based on Cocos Creator.
+- Matchmaking system
+- Rooms system
+- 1v1 pong game, with integrations between frontend and game
+- Reconnections
+- Custom dynamic maps loading
